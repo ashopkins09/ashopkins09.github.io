@@ -369,6 +369,13 @@
       card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     }
 
+    // Smoothing variables and factor
+    let prevTiltX = 0;
+    let prevTiltY = 0;
+    let prevTranslateX = 0;
+    let prevTranslateY = 0;
+    const smoothingFactor = 0.1; // smaller = smoother but more lag
+
     async function detectFace() {
       if (video.readyState < 2) {
         requestAnimationFrame(detectFace);
@@ -385,14 +392,25 @@
         const nx = (centerX / vw) * 2 - 1; // -1 to 1
         const ny = (centerY / vh) * 2 - 1; // -1 to 1
 
-        const tiltY = nx * maxTilt;
-        const tiltX = -ny * maxTilt;
-        const translateX = nx * 20;
-        const translateY = ny * 20;
+        const targetTiltY = nx * maxTilt;
+        const targetTiltX = -ny * maxTilt;
+        const targetTranslateX = nx * 20;
+        const targetTranslateY = ny * 20;
 
-        applyTilt(tiltX.toFixed(2), tiltY.toFixed(2), translateX.toFixed(2), translateY.toFixed(2));
+        // Smooth interpolation
+        prevTiltX += (targetTiltX - prevTiltX) * smoothingFactor;
+        prevTiltY += (targetTiltY - prevTiltY) * smoothingFactor;
+        prevTranslateX += (targetTranslateX - prevTranslateX) * smoothingFactor;
+        prevTranslateY += (targetTranslateY - prevTranslateY) * smoothingFactor;
+
+        applyTilt(prevTiltX.toFixed(2), prevTiltY.toFixed(2), prevTranslateX.toFixed(2), prevTranslateY.toFixed(2));
       } else {
-        applyTilt(0, 0);
+        // Slowly return to neutral if no face detected
+        prevTiltX += (0 - prevTiltX) * smoothingFactor;
+        prevTiltY += (0 - prevTiltY) * smoothingFactor;
+        prevTranslateX += (0 - prevTranslateX) * smoothingFactor;
+        prevTranslateY += (0 - prevTranslateY) * smoothingFactor;
+        applyTilt(prevTiltX.toFixed(2), prevTiltY.toFixed(2), prevTranslateX.toFixed(2), prevTranslateY.toFixed(2));
       }
       requestAnimationFrame(detectFace);
     }

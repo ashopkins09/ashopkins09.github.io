@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bubble Wrap - Realistic Popped</title>
+<title>Bubble Wrap - Crinkled Inside, Rounded Outside</title>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
 <style>
   html, body {
@@ -20,8 +20,8 @@
     grid-template-columns: repeat(auto-fill, 48px);
     grid-auto-rows: 48px;
     justify-content: center;
-    gap: 4px;
-    padding: 8px;
+    gap: 6px;
+    padding: 12px;
     user-select: none;
     z-index: 0;
   }
@@ -31,97 +31,77 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, #fff, #c0dfff 60%, #93caff 90%);
+    background:
+      radial-gradient(circle at 40% 40%, #fff 30%, #a3caff 70%, #7db3f7 95%);
     box-shadow:
-      inset 0 4px 6px rgba(255 255 255 / 0.9),
+      inset 0 6px 10px rgba(255 255 255 / 0.85),
+      inset 0 -3px 8px rgba(0 38 120 / 0.25),
       0 3px 5px rgba(0 0 0 / 0.1);
     cursor: pointer;
-    transform-origin: center;
-    clip-path: circle(50% at 50% 50%);
     overflow: hidden;
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.4s ease;
   }
 
-  /* Crinkle texture overlay with noise pattern */
+  /* Crinkle texture overlay */
   .bubble::before {
     content: "";
     position: absolute;
     inset: 0;
-    pointer-events: none;
     border-radius: 50%;
+    pointer-events: none;
     opacity: 0;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" ><filter id="f"><feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="1" stitchTiles="stitch"/></filter><rect width="20" height="20" filter="url(%23f)" fill="white" /></svg>') repeat;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2"/></filter><rect width="20" height="20" filter="url(%23noise)" fill="white"/></svg>') repeat;
     mix-blend-mode: multiply;
-    animation: crinkleMove 3s linear infinite;
+    animation: crinkleMove 5s linear infinite;
   }
 
   @keyframes crinkleMove {
-    0% {
-      background-position: 0 0;
-    }
-    100% {
-      background-position: 20px 20px;
-    }
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 20px; }
   }
 
-  @keyframes popAnim {
-    0% {
-      transform: scale(1) scaleY(1);
-      box-shadow:
-        inset 0 4px 6px rgba(255 255 255 / 0.9),
-        0 3px 5px rgba(0 0 0 / 0.1);
-      filter: none;
-    }
-    50% {
-      transform: scale(0.8) scaleY(0.6);
-      box-shadow:
-        inset 0 1px 3px rgba(0 0 0 / 0.5),
-        0 0 2px rgba(0 0 0 / 0.2);
-      filter: url(#crinkle);
-    }
-    100% {
-      transform: scale(0.8) scaleY(0.6);
-      box-shadow:
-        inset 0 1px 3px rgba(0 0 0 / 0.5),
-        0 0 2px rgba(0 0 0 / 0.2);
-      filter: url(#crinkle);
-    }
-  }
-
-  @keyframes unpopAnim {
-    0% {
-      transform: scale(0.8) scaleY(0.6);
-      box-shadow:
-        inset 0 1px 3px rgba(0 0 0 / 0.5),
-        0 0 2px rgba(0 0 0 / 0.2);
-      filter: url(#crinkle);
-    }
-    50% {
-      transform: scale(0.9) scaleY(0.85);
-      box-shadow:
-        inset 0 3px 4px rgba(0 0 0 / 0.15),
-        0 2px 3px rgba(0 0 0 / 0.1);
-      filter: none;
-    }
-    100% {
-      transform: scale(1) scaleY(1);
-      box-shadow:
-        inset 0 4px 6px rgba(255 255 255 / 0.9),
-        0 3px 5px rgba(0 0 0 / 0.1);
-      filter: none;
-    }
+  /* Highlight folds for popped */
+  .bubble::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      radial-gradient(ellipse at 25% 25%, rgba(255 255 255 / 0.6), transparent 50%),
+      radial-gradient(ellipse at 75% 75%, rgba(255 255 255 / 0.25), transparent 50%);
+    filter: blur(2px);
+    transition: opacity 0.4s ease;
   }
 
   .pop {
-    animation: popAnim 0.8s ease forwards;
+    /* Keep perfect circle shape */
+    /* Add subtle crinkle filter */
+    filter: url(#crinkleFilter);
   }
 
-  .pop::before {
+  .pop::before, .pop::after {
     opacity: 0.15;
   }
 
+  .pop {
+    /* Remove scaling so shape doesn't distort */
+    /* Add subtle inner shadow and less outer shadow */
+    box-shadow:
+      inset 0 8px 14px rgba(255 255 255 / 0.9),
+      inset 0 -6px 14px rgba(0 38 120 / 0.4),
+      0 1px 3px rgba(0 0 0 / 0.1);
+    transition: box-shadow 0.6s ease;
+  }
+
   .unpop {
-    animation: unpopAnim 0.6s ease forwards;
+    filter: none !important;
+    box-shadow:
+      inset 0 6px 10px rgba(255 255 255 / 0.85),
+      inset 0 -3px 8px rgba(0 38 120 / 0.25),
+      0 3px 5px rgba(0 0 0 / 0.1);
+    transition: box-shadow 0.6s ease;
   }
 
   .container {
@@ -150,13 +130,13 @@
 </head>
 <body>
 
-<!-- SVG filter for subtle crinkle -->
+<!-- SVG filter for crinkle inside -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <filter id="crinkle" x="0" y="0" width="100%" height="100%" >
-    <feTurbulence id="turbulence" baseFrequency="0.07 0.08" numOctaves="2" result="turbulence" seed="7">
-      <animate attributeName="baseFrequency" values="0.07 0.08;0.12 0.15;0.07 0.08" dur="3s" repeatCount="indefinite" />
+  <filter id="crinkleFilter" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.12 0.15" numOctaves="2" result="turbulence" seed="9">
+      <animate attributeName="baseFrequency" values="0.12 0.15;0.18 0.22;0.12 0.15" dur="4s" repeatCount="indefinite" />
     </feTurbulence>
-    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="5" xChannelSelector="R" yChannelSelector="G" />
+    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
   </filter>
 </svg>
 
@@ -193,7 +173,6 @@
 
         if (poppedBubble) {
           poppedBubble.classList.remove('pop');
-          void poppedBubble.offsetWidth; // reflow
           poppedBubble.classList.add('unpop');
           poppedBubble.addEventListener('animationend', () => onUnpopAnimationEnd(poppedBubble), { once: true });
         }

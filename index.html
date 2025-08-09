@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>My Home Page</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
 <style>
   :root {
     --bg-1: #f5faff;
@@ -177,7 +178,6 @@
     color: #334;
   }
 
-  /* Accessibility: visible focus for buttons */
   .btn:focus {
     outline: 2px solid var(--accent-1);
     outline-offset: 2px;
@@ -203,6 +203,7 @@
 </style>
 </head>
 <body>
+
 <svg style="position: absolute; width:0; height:0; pointer-events:none;" aria-hidden="true" >
   <defs>
     <filter id="goo">
@@ -275,67 +276,141 @@
   </section>
 </main>
 
+<!-- Hidden video element for camera input -->
+<video id="video" autoplay muted playsinline style="display:none;"></video>
+
+<!-- Face API.js library -->
+<script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+
 <script>
-(() => {
-  const card = document.getElementById('glassCard');
-  const blobs = document.querySelectorAll('.blob');
-  const langToggle = document.getElementById('langToggle');
+  (() => {
+    const card = document.getElementById('glassCard');
+    const blobs = document.querySelectorAll('.blob');
+    const langToggle = document.getElementById('langToggle');
+    const video = document.getElementById('video');
 
-  let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
-  updateLanguage(currentLang);
-
-  langToggle.addEventListener('click', () => {
-    const newLang = currentLang === 'en' ? 'ja' : 'en';
-    if (currentLang === 'en' && newLang === 'ja') {
-      alert("Weeb mode activated 🇯🇵✨");
-    }
-    currentLang = newLang;
+    let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
     updateLanguage(currentLang);
-  });
 
-  function updateLanguage(lang) {
-    if (lang === 'ja') {
-      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
-      langToggle.textContent = "English";
-    } else {
-      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
-      langToggle.textContent = "日本語";
-    }
-  }
-
-  const maxTilt = 6;
-  window.addEventListener('mousemove', (e) => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const x = e.clientX - w / 2;
-    const y = e.clientY - h / 2;
-    const nx = (x / (w / 2));
-    const ny = (y / (h / 2));
-    const tiltY = nx * maxTilt;
-    const tiltX = -ny * maxTilt;
-    card.style.setProperty('--tiltX', tiltX.toFixed(2));
-    card.style.setProperty('--tiltY', tiltY.toFixed(2));
-  });
-
-  window.addEventListener('mouseleave', () => {
-    card.style.setProperty('--tiltX', 0);
-    card.style.setProperty('--tiltY', 0);
-  });
-
-  let t = 0;
-  function idleLoop(){
-    t += 0.005;
-    blobs.forEach((b, i) => {
-      const dx = Math.sin(t * (0.6 + i * 0.2)) * (6 + i*4);
-      const dy = Math.cos(t * (0.4 + i * 0.15)) * (4 + i*3);
-      b.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    langToggle.addEventListener('click', () => {
+      const newLang = currentLang === 'en' ? 'ja' : 'en';
+      if (currentLang === 'en' && newLang === 'ja') {
+        alert("Weeb mode activated 🇯🇵✨");
+      }
+      currentLang = newLang;
+      updateLanguage(currentLang);
     });
-    requestAnimationFrame(idleLoop);
-  }
-  idleLoop();
-})();
+
+    function updateLanguage(lang) {
+      if (lang === 'ja') {
+        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
+        langToggle.textContent = "English";
+      } else {
+        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
+        langToggle.textContent = "日本語";
+      }
+    }
+
+    // Animate blobs floating
+    let t = 0;
+    function idleLoop(){
+      t += 0.005;
+      blobs.forEach((b, i) => {
+        const dx = Math.sin(t * (0.6 + i * 0.2)) * (6 + i*4);
+        const dy = Math.cos(t * (0.4 + i * 0.15)) * (4 + i*3);
+        b.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      });
+      requestAnimationFrame(idleLoop);
+    }
+    idleLoop();
+
+    // Face tracking control flag
+    let faceControlActive = false;
+    const maxTilt = 6;
+
+    // Fallback mouse move tilt, only when face control inactive
+    window.addEventListener('mousemove', (e) => {
+      if (faceControlActive) return;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const x = e.clientX - w / 2;
+      const y = e.clientY - h / 2;
+      const nx = (x / (w / 2));
+      const ny = (y / (h / 2));
+      const tiltY = nx * maxTilt;
+      const tiltX = -ny * maxTilt;
+      card.style.setProperty('--tiltX', tiltX.toFixed(2));
+      card.style.setProperty('--tiltY', tiltY.toFixed(2));
+      card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(0) translateY(0)`;
+    });
+
+    window.addEventListener('mouseleave', () => {
+      if (faceControlActive) return;
+      card.style.setProperty('--tiltX', 0);
+      card.style.setProperty('--tiltY', 0);
+      card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
+    });
+
+    // Initialize Face API and start detection
+    async function setupFaceAPI() {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+        video.style.display = 'none';
+        faceControlActive = true;
+        detectFaceLoop();
+      } catch (err) {
+        console.warn('Camera access denied or unavailable, fallback to mouse control.');
+        faceControlActive = false;
+      }
+    }
+
+    async function detectFaceLoop() {
+      if (video.readyState < 2) {
+        requestAnimationFrame(detectFaceLoop);
+        return;
+      }
+
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
+      const result = await faceapi.detectSingleFace(video, options);
+
+      if (result) {
+        const box = result.box;
+        const centerX = box.x + box.width / 2;
+        const centerY = box.y + box.height / 2;
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+
+        // Normalize coordinates from [0, width/height] to [-1, 1]
+        const nx = (centerX / vw) * 2 - 1;
+        const ny = (centerY / vh) * 2 - 1;
+
+        // Map normalized coords to rotation and translation
+        const tiltY = nx * maxTilt;
+        const tiltX = -ny * maxTilt;
+        const translateX = nx * 20; // px
+        const translateY = ny * 20; // px
+
+        card.style.setProperty('--tiltX', tiltX.toFixed(2));
+        card.style.setProperty('--tiltY', tiltY.toFixed(2));
+        card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) translateY(${translateY.toFixed(2)}px)`;
+      } else {
+        // No face detected: reset transforms
+        card.style.setProperty('--tiltX', 0);
+        card.style.setProperty('--tiltY', 0);
+        card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
+      }
+
+      requestAnimationFrame(detectFaceLoop);
+    }
+
+    setupFaceAPI();
+
+  })();
 </script>
+
 </body>
 </html>

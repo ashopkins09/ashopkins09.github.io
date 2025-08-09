@@ -110,4 +110,243 @@
     animation: popEffect 0.3s forwards;
   }
 
-  @keyframes popEffec
+  @keyframes popEffect {
+    0% {
+      transform: scale(1);
+      opacity: 0.6;
+      box-shadow: none;
+    }
+    50% {
+      transform: scale(1.25);
+      opacity: 1;
+      box-shadow: 0 0 10px 4px rgba(255, 255, 255, 0.8);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.4;
+      box-shadow: none;
+    }
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--accent-1);
+  }
+
+  .logo span {
+    color: var(--accent-2);
+  }
+
+  .nav a {
+    color: #334;
+    text-decoration: none;
+    margin-left: 18px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .hero {
+    display: flex;
+    justify-content: center;
+  }
+
+  .glass-card {
+    width: var(--card-width);
+    padding: 28px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, var(--glass-alpha));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+  }
+
+  .glass-inner h1 {
+    margin-top: 0;
+    font-size: 2rem;
+    color: #223;
+  }
+
+  .lead {
+    color: #445;
+    font-weight: 400;
+    margin: 0 0 18px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-right: 10px;
+    text-decoration: none;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .btn.primary {
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+  }
+
+  .btn.ghost {
+    background: transparent;
+    color: #334;
+  }
+
+  .site-footer {
+    margin-top: 44px;
+    font-size: 13px;
+    text-align: center;
+    color: #667;
+  }
+
+  .lang-toggle {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<svg style="position: absolute; width:0; height:0; pointer-events:none;" aria-hidden="true" >
+  <defs>
+    <filter id="goo">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="
+         1 0 0 0 0
+         0 1 0 0 0
+         0 0 1 0 0
+         0 0 0 18 -7" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+</svg>
+
+<main class="page">
+  <div class="bg">
+    <div class="blobs" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+  </div>
+
+  <section class="container">
+    <header class="site-header">
+      <div class="logo">
+        <span class="lang-en">My</span><span class="lang-ja">マイ</span>
+        <span> </span>
+        <span class="lang-en">Home</span><span class="lang-ja">ホーム</span>
+      </div>
+      <nav class="nav">
+        <a href="#"><span class="lang-en">About Me</span><span class="lang-ja">私について</span></a>
+        <a href="#"><span class="lang-en">Projects</span><span class="lang-ja">プロジェクト</span></a>
+        <a href="#"><span class="lang-en">Contact</span><span class="lang-ja">連絡先</span></a>
+      </nav>
+      <button class="lang-toggle" id="langToggle">日本語</button>
+    </header>
+
+    <div class="hero">
+      <div class="glass-card" id="glassCard">
+        <div class="glass-inner">
+          <h1>
+            <span class="lang-en">Hi, I’m [Your Name]</span>
+            <span class="lang-ja">こんにちは、[あなたの名前]です</span>
+          </h1>
+          <p class="lead">
+            <span class="lang-en">Welcome to my personal corner of the internet. Here you’ll find my work, my passions, and a few experiments I’ve been playing with.</span>
+            <span class="lang-ja">私のインターネット上の個人的な空間へようこそ。ここでは私の作品、情熱、そしていくつかの実験を見ることができます。</span>
+          </p>
+          <div class="actions">
+            <a href="#" class="btn primary">
+              <span class="lang-en">See My Work</span>
+              <span class="lang-ja">作品を見る</span>
+            </a>
+            <a href="#" class="btn ghost">
+              <span class="lang-en">Get in Touch</span>
+              <span class="lang-ja">連絡を取る</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <p>
+        <span class="lang-en">© 2025 [Your Name] — Designed with CSS & JS</span>
+        <span class="lang-ja">© 2025 [あなたの名前] — CSSとJSでデザイン</span>
+      </p>
+    </footer>
+  </section>
+</main>
+
+<script>
+  (() => {
+    const langToggle = document.getElementById('langToggle');
+    let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
+    updateLanguage(currentLang);
+
+    langToggle.addEventListener('click', () => {
+      const newLang = currentLang === 'en' ? 'ja' : 'en';
+      if (currentLang === 'en' && newLang === 'ja') {
+        alert("Weeb mode activated 🇯🇵✨");
+      }
+      currentLang = newLang;
+      updateLanguage(currentLang);
+    });
+
+    function updateLanguage(lang) {
+      if (lang === 'ja') {
+        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
+        langToggle.textContent = "English";
+      } else {
+        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
+        langToggle.textContent = "日本語";
+      }
+    }
+
+    // Bubble wrap pop effect on blobs
+    const blobs = document.querySelectorAll('.blob');
+    blobs.forEach(blob => {
+      blob.addEventListener('click', () => {
+        blob.classList.add('pop');
+        setTimeout(() => {
+          blob.classList.remove('pop');
+        }, 300);
+      });
+    });
+
+    // Subtle floating already done by CSS animation bubbleFloat
+  })();
+</script>
+
+</body>
+</html>

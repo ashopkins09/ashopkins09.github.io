@@ -38,7 +38,6 @@
     transform-origin: center;
   }
 
-  /* Pop animation: scale down and keep popped style */
   @keyframes popAnim {
     0% {
       transform: scale(1);
@@ -60,7 +59,6 @@
     }
   }
 
-  /* Unpop animation: scale back up to normal */
   @keyframes unpopAnim {
     0% {
       transform: scale(0.7);
@@ -90,7 +88,6 @@
     animation: unpopAnim 0.6s ease forwards;
   }
 
-  /* Container content */
   .container {
     position: relative;
     z-index: 10;
@@ -129,7 +126,11 @@
 <script>
   const bubbleWrap = document.getElementById('bubble-wrap');
   const popSound = document.getElementById('popSound');
-  let poppedBubble = null; // tracks currently popped bubble
+  let poppedBubble = null;
+
+  function onUnpopAnimationEnd(bubble) {
+    bubble.classList.remove('unpop');
+  }
 
   function createBubbles() {
     bubbleWrap.innerHTML = '';
@@ -143,20 +144,21 @@
 
       bubble.addEventListener('click', () => {
         if (bubble === poppedBubble) {
-          // Clicking same bubble does nothing
+          // Do nothing if same bubble clicked again
           return;
         }
 
         if (poppedBubble) {
-          // Unpop the previously popped bubble
+          // Unpop previous bubble with animation
           poppedBubble.classList.remove('pop');
+          // Force reflow to restart animation
+          void poppedBubble.offsetWidth;
           poppedBubble.classList.add('unpop');
-          poppedBubble.addEventListener('animationend', () => {
-            poppedBubble.classList.remove('unpop');
-          }, { once: true });
+
+          poppedBubble.addEventListener('animationend', () => onUnpopAnimationEnd(poppedBubble), { once: true });
         }
 
-        // Pop the clicked bubble
+        // Pop clicked bubble
         bubble.classList.add('pop');
         const soundClone = popSound.cloneNode();
         soundClone.play();

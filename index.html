@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>My Home Page</title>
 
-<!-- Use Hachi Maru Pop font -->
+<!-- Hachi Maru Pop font -->
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
 
 <style>
@@ -146,7 +146,8 @@
     backdrop-filter: blur(12px) saturate(1.2);
     -webkit-backdrop-filter: blur(12px) saturate(1.2);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-    transform: perspective(800px) rotateX(calc(var(--tiltX) * 1deg)) rotateY(calc(var(--tiltY) * 1deg));
+    display: flex;
+    flex-direction: column;
     transition: transform 0.2s ease;
   }
 
@@ -210,25 +211,24 @@
 
   /* iPhone Safari compatible video style */
   #video {
+    position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
-    position: absolute;
   }
 
-  /* Show enable camera button */
   #enableCameraBtn {
-    margin-bottom: 20px;
-    display: none;
+    margin-bottom: 24px;
   }
 
-  #cameraPrompt {
-    color: #a00;
+  #errorMessage {
+    color: red;
     font-weight: 600;
-    display: none;
-    text-align: center;
-    max-width: 280px;
     margin-bottom: 20px;
+  }
+
+  .actions {
+    margin-top: 12px;
   }
 </style>
 </head>
@@ -272,17 +272,13 @@
       <button class="lang-toggle" id="langToggle">日本語</button>
     </header>
 
-    <div class="hero">
-      <!-- iOS Safari camera enable button -->
+    <div class="hero" style="flex-direction: column; align-items: center;">
       <button id="enableCameraBtn" class="btn primary" type="button">
         <span class="lang-en">Enable Camera Face Tracking</span>
         <span class="lang-ja">カメラ顔認識を有効にする</span>
       </button>
 
-      <p id="cameraPrompt">
-        <span class="lang-en">Tap the button above to activate camera face tracking on your device.</span>
-        <span class="lang-ja">顔認識を有効にするには、上のボタンを押してください。</span>
-      </p>
+      <div id="errorMessage"></div>
 
       <div class="glass-card" id="glassCard">
         <div class="glass-inner">
@@ -317,11 +313,9 @@
   </section>
 </main>
 
-<!-- Hidden video element for camera input -->
 <video id="video" autoplay muted playsinline></video>
 
-<!-- Face API.js library -->
-<script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
 
 <script>
   (async () => {
@@ -330,7 +324,7 @@
     const langToggle = document.getElementById('langToggle');
     const video = document.getElementById('video');
     const enableCameraBtn = document.getElementById('enableCameraBtn');
-    const cameraPrompt = document.getElementById('cameraPrompt');
+    const errorMessage = document.getElementById('errorMessage');
 
     let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
     updateLanguage(currentLang);
@@ -370,146 +364,53 @@
     idleLoop();
 
     const maxTilt = 6;
-    let faceControlActive = false;
 
-    // Fallback mouse move tilt (only if no face control)
-    window.addEventListener('mousemove', (e) => {
-      if (faceControlActive) return;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const x = e.clientX - w / 2;
-      const y = e.clientY - h / 2;
-      const nx = (x / (w / 2));
-      const ny = (y / (h / 2));
-      const tiltY = nx * maxTilt;
-      const tiltX = -ny * maxTilt;
-      card.style.setProperty('--tiltX', tiltX.toFixed(2));
-      card.style.setProperty('--tiltY', tiltY.toFixed(2));
-      card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(0) translateY(0)`;
-    });
-
-    window.addEventListener('mouseleave', () => {
-      if (faceControlActive) return;
-      card.style.setProperty('--tiltX', 0);
-      card.style.setProperty('--tiltY', 0);
-      card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
-    });
-
-    // Improved camera setup function
-    async function setupCamera() {
-      // Check permissions if possible
-      if (navigator.permissions) {
-        try {
-          const permissionStatus = await navigator.permissions.query({ name: 'camera' });
-          if (permissionStatus.state === 'denied') {
-            alert('Camera access is denied. Please enable it in your browser settings.');
-            throw new Error('Camera permission denied');
-          }
-          permissionStatus.onchange = () => {
-            if (permissionStatus.state === 'denied') {
-              alert('Camera access was revoked.');
-            }
-          };
-        } catch {
-          // Ignore if no permission API support (iOS Safari)
-        }
-      }
-
-      // Reuse existing stream if available
-      if (video.srcObject) {
-        return video.srcObject;
-      }
-
-      // Request camera
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-        video.srcObject = stream;
-        return stream;
-      } catch (err) {
-        alert('Failed to access camera: ' + err.message);
-        throw err;
-      }
+    function applyTilt(tiltX, tiltY, translateX = 0, translateY = 0) {
+      card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     }
 
-    // Detect if running on iOS
-    function isIOS() {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    }
-
-    async function trySetupCamera() {
-      try {
-        await setupCamera();
-        faceControlActive = true;
-        cameraPrompt.style.display = 'none';
-        enableCameraBtn.style.display = 'none';
-        detectFaceLoop();
-      } catch (err) {
-        faceControlActive = false;
-        console.warn('Camera setup failed:', err);
-        if (isIOS()) {
-          // Show button and prompt on iOS for manual activation
-          cameraPrompt.style.display = 'block';
-          enableCameraBtn.style.display = 'inline-block';
-        }
-      }
-    }
-
-    // Face detection loop
-    async function detectFaceLoop() {
+    async function detectFace() {
       if (video.readyState < 2) {
-        requestAnimationFrame(detectFaceLoop);
+        requestAnimationFrame(detectFace);
         return;
       }
-
-      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-      const result = await faceapi.detectSingleFace(video, options);
-
-      if (result) {
-        const box = result.box;
+      const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions());
+      if (detection) {
+        const box = detection.box;
         const centerX = box.x + box.width / 2;
         const centerY = box.y + box.height / 2;
         const vw = video.videoWidth;
         const vh = video.videoHeight;
 
-        const nx = (centerX / vw) * 2 - 1;
-        const ny = (centerY / vh) * 2 - 1;
+        const nx = (centerX / vw) * 2 - 1; // -1 to 1
+        const ny = (centerY / vh) * 2 - 1; // -1 to 1
 
         const tiltY = nx * maxTilt;
         const tiltX = -ny * maxTilt;
         const translateX = nx * 20;
         const translateY = ny * 20;
 
-        card.style.setProperty('--tiltX', tiltX.toFixed(2));
-        card.style.setProperty('--tiltY', tiltY.toFixed(2));
-        card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) translateY(${translateY.toFixed(2)}px)`;
+        applyTilt(tiltX.toFixed(2), tiltY.toFixed(2), translateX.toFixed(2), translateY.toFixed(2));
       } else {
-        card.style.setProperty('--tiltX', 0);
-        card.style.setProperty('--tiltY', 0);
-        card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
+        applyTilt(0, 0);
       }
-      requestAnimationFrame(detectFaceLoop);
+      requestAnimationFrame(detectFace);
     }
 
     await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
 
-    // Try to start camera immediately (except iOS)
-    if (!isIOS()) {
-      trySetupCamera();
-    } else {
-      // Show enable button + prompt for iOS Safari
-      cameraPrompt.style.display = 'block';
-      enableCameraBtn.style.display = 'inline-block';
-    }
-
     enableCameraBtn.addEventListener('click', async () => {
-      cameraPrompt.style.display = 'none';
-      enableCameraBtn.style.display = 'none';
+      errorMessage.textContent = '';
       try {
-        await setupCamera();
-        faceControlActive = true;
-        detectFaceLoop();
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+        await video.play();
+        enableCameraBtn.style.display = 'none';
+        detectFace();
       } catch (err) {
-        alert('Could not start camera: ' + err.message);
+        errorMessage.textContent = (currentLang === 'ja') ?
+          'カメラへのアクセスに失敗しました: ' + err.message :
+          'Error accessing camera: ' + err.message;
       }
     });
   })();

@@ -354,18 +354,47 @@
       card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
     });
 
+    // Improved camera setup function
+    async function setupCamera() {
+      // Check permissions if possible
+      if (navigator.permissions) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+          if (permissionStatus.state === 'denied') {
+            alert('Camera access is denied. Please enable it in your browser settings.');
+            throw new Error('Camera permission denied');
+          }
+          permissionStatus.onchange = () => {
+            if (permissionStatus.state === 'denied') {
+              alert('Camera access was revoked.');
+            }
+          };
+        } catch {
+          // Ignore if no permission API support
+        }
+      }
+
+      // Reuse existing stream if available
+      if (video.srcObject) {
+        return video.srcObject;
+      }
+
+      // Request camera
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+        return stream;
+      } catch (err) {
+        alert('Failed to access camera: ' + err.message);
+        throw err;
+      }
+    }
+
     try {
-      // Load the tiny face detector model from CDN
       await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
-
-      // Request camera access
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      video.srcObject = stream;
-      video.style.display = 'none';
-
+      await setupCamera();
       faceControlActive = true;
 
-      // Detection loop
       async function detectFaceLoop() {
         if (video.readyState < 2) {
           requestAnimationFrame(detectFaceLoop);
@@ -382,11 +411,9 @@
           const vw = video.videoWidth;
           const vh = video.videoHeight;
 
-          // Normalize to [-1, 1]
           const nx = (centerX / vw) * 2 - 1;
           const ny = (centerY / vh) * 2 - 1;
 
-          // Map to tilt and translate
           const tiltY = nx * maxTilt;
           const tiltX = -ny * maxTilt;
           const translateX = nx * 20;
@@ -396,17 +423,14 @@
           card.style.setProperty('--tiltY', tiltY.toFixed(2));
           card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) translateY(${translateY.toFixed(2)}px)`;
         } else {
-          // Reset if no face found
           card.style.setProperty('--tiltX', 0);
           card.style.setProperty('--tiltY', 0);
           card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
         }
-
         requestAnimationFrame(detectFaceLoop);
       }
 
       detectFaceLoop();
-
     } catch (err) {
       faceControlActive = false;
       console.warn('Camera access or model loading failed:', err);

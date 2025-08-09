@@ -130,6 +130,8 @@
 
   .hero {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
   }
 
@@ -168,6 +170,8 @@
     margin-right: 10px;
     text-decoration: none;
     border: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    user-select: none;
   }
 
   .btn.primary {
@@ -201,6 +205,30 @@
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
+    user-select: none;
+  }
+
+  /* iPhone Safari compatible video style */
+  #video {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  /* Show enable camera button */
+  #enableCameraBtn {
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  #cameraPrompt {
+    color: #a00;
+    font-weight: 600;
+    display: none;
+    text-align: center;
+    max-width: 280px;
+    margin-bottom: 20px;
   }
 </style>
 </head>
@@ -245,6 +273,17 @@
     </header>
 
     <div class="hero">
+      <!-- iOS Safari camera enable button -->
+      <button id="enableCameraBtn" class="btn primary" type="button">
+        <span class="lang-en">Enable Camera Face Tracking</span>
+        <span class="lang-ja">カメラ顔認識を有効にする</span>
+      </button>
+
+      <p id="cameraPrompt">
+        <span class="lang-en">Tap the button above to activate camera face tracking on your device.</span>
+        <span class="lang-ja">顔認識を有効にするには、上のボタンを押してください。</span>
+      </p>
+
       <div class="glass-card" id="glassCard">
         <div class="glass-inner">
           <h1>
@@ -279,7 +318,7 @@
 </main>
 
 <!-- Hidden video element for camera input -->
-<video id="video" autoplay muted playsinline style="display:none;"></video>
+<video id="video" autoplay muted playsinline></video>
 
 <!-- Face API.js library -->
 <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
@@ -290,6 +329,8 @@
     const blobs = document.querySelectorAll('.blob');
     const langToggle = document.getElementById('langToggle');
     const video = document.getElementById('video');
+    const enableCameraBtn = document.getElementById('enableCameraBtn');
+    const cameraPrompt = document.getElementById('cameraPrompt');
 
     let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
     updateLanguage(currentLang);
@@ -370,7 +411,7 @@
             }
           };
         } catch {
-          // Ignore if no permission API support
+          // Ignore if no permission API support (iOS Safari)
         }
       }
 
@@ -390,52 +431,87 @@
       }
     }
 
-    try {
-      await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
-      await setupCamera();
-      faceControlActive = true;
+    // Detect if running on iOS
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
 
-      async function detectFaceLoop() {
-        if (video.readyState < 2) {
-          requestAnimationFrame(detectFaceLoop);
-          return;
+    async function trySetupCamera() {
+      try {
+        await setupCamera();
+        faceControlActive = true;
+        cameraPrompt.style.display = 'none';
+        enableCameraBtn.style.display = 'none';
+        detectFaceLoop();
+      } catch (err) {
+        faceControlActive = false;
+        console.warn('Camera setup failed:', err);
+        if (isIOS()) {
+          // Show button and prompt on iOS for manual activation
+          cameraPrompt.style.display = 'block';
+          enableCameraBtn.style.display = 'inline-block';
         }
+      }
+    }
 
-        const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-        const result = await faceapi.detectSingleFace(video, options);
-
-        if (result) {
-          const box = result.box;
-          const centerX = box.x + box.width / 2;
-          const centerY = box.y + box.height / 2;
-          const vw = video.videoWidth;
-          const vh = video.videoHeight;
-
-          const nx = (centerX / vw) * 2 - 1;
-          const ny = (centerY / vh) * 2 - 1;
-
-          const tiltY = nx * maxTilt;
-          const tiltX = -ny * maxTilt;
-          const translateX = nx * 20;
-          const translateY = ny * 20;
-
-          card.style.setProperty('--tiltX', tiltX.toFixed(2));
-          card.style.setProperty('--tiltY', tiltY.toFixed(2));
-          card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) translateY(${translateY.toFixed(2)}px)`;
-        } else {
-          card.style.setProperty('--tiltX', 0);
-          card.style.setProperty('--tiltY', 0);
-          card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
-        }
+    // Face detection loop
+    async function detectFaceLoop() {
+      if (video.readyState < 2) {
         requestAnimationFrame(detectFaceLoop);
+        return;
       }
 
-      detectFaceLoop();
-    } catch (err) {
-      faceControlActive = false;
-      console.warn('Camera access or model loading failed:', err);
-      alert('Camera permission is needed for face tracking. Falling back to mouse control.');
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
+      const result = await faceapi.detectSingleFace(video, options);
+
+      if (result) {
+        const box = result.box;
+        const centerX = box.x + box.width / 2;
+        const centerY = box.y + box.height / 2;
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+
+        const nx = (centerX / vw) * 2 - 1;
+        const ny = (centerY / vh) * 2 - 1;
+
+        const tiltY = nx * maxTilt;
+        const tiltX = -ny * maxTilt;
+        const translateX = nx * 20;
+        const translateY = ny * 20;
+
+        card.style.setProperty('--tiltX', tiltX.toFixed(2));
+        card.style.setProperty('--tiltY', tiltY.toFixed(2));
+        card.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateX(${translateX.toFixed(2)}px) translateY(${translateY.toFixed(2)}px)`;
+      } else {
+        card.style.setProperty('--tiltX', 0);
+        card.style.setProperty('--tiltY', 0);
+        card.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg) translateX(0) translateY(0)`;
+      }
+      requestAnimationFrame(detectFaceLoop);
     }
+
+    await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
+
+    // Try to start camera immediately (except iOS)
+    if (!isIOS()) {
+      trySetupCamera();
+    } else {
+      // Show enable button + prompt for iOS Safari
+      cameraPrompt.style.display = 'block';
+      enableCameraBtn.style.display = 'inline-block';
+    }
+
+    enableCameraBtn.addEventListener('click', async () => {
+      cameraPrompt.style.display = 'none';
+      enableCameraBtn.style.display = 'none';
+      try {
+        await setupCamera();
+        faceControlActive = true;
+        detectFaceLoop();
+      } catch (err) {
+        alert('Could not start camera: ' + err.message);
+      }
+    });
   })();
 </script>
 

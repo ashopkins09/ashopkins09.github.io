@@ -8,7 +8,7 @@
   :root {
     --bubble-size: 84px;  /* size in pixels */
     --gap: 18px;          /* spacing between bubbles */
-    --rows: 8;            /* adjust to fit photo scale */
+    --rows: 8;            /* adjust to fit */
     --cols: 10;
   }
   html, body {
@@ -25,13 +25,14 @@
   }
   .bubble-grid {
     position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
+    top:0; left:0;
+    width:100%; height:100%;
     display:grid;
     grid-template-columns: repeat(var(--cols), var(--bubble-size));
     grid-template-rows: repeat(var(--rows), var(--bubble-size));
     gap: var(--gap);
+    justify-content:center;
+    align-content:center;
   }
   .bubble {
     width: var(--bubble-size);
@@ -42,37 +43,28 @@
     overflow:hidden;
   }
   .bubble::before {
-    /* This layer shows the bubble's unpopped cropped image */
     content:"";
     position:absolute;
     inset:0;
-    background-image: inherit; /* set dynamically via JS */
+    background-image: url('https://www.photos-public-domain.com/wp-content/uploads/2018/05/bubble-wrap-texture-2.jpg');
     background-repeat: no-repeat;
-    background-size: inherit;
-    background-position: inherit;
     border-radius:50%;
     transition: transform 0.2s ease, filter 0.2s ease;
   }
   .bubble.popped::before {
     transform: scaleY(0.8);
-    filter: brightness(0.9) contrast(1.1);
+    filter: brightness(0.85) contrast(1.2);
   }
-  .bubble::after {
-    /* Optional subtle crinkle effect when popped */
+  .bubble.popped::after {
     content:"";
     position:absolute;
     inset:0;
     border-radius:50%;
-    background: transparent;
-    pointer-events:none;
-    opacity:0;
-    transition: opacity 0.2s ease;
-  }
-  .bubble.popped::after {
     background: repeating-linear-gradient(45deg,
       rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 2px,
       rgba(255,255,255,0.06) 2px, rgba(255,255,255,0.06) 4px);
-    opacity:0.3;
+    opacity:0.25;
+    pointer-events:none;
   }
 </style>
 </head>
@@ -82,9 +74,7 @@
   </div>
 
 <script>
-const sheet = document.getElementById('sheet');
 const grid = document.getElementById('grid');
-
 const rows = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows'));
 const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols'));
 const bubbleSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bubble-size'));
@@ -92,26 +82,38 @@ const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue
 
 let last = null;
 
-const sheetStyles = getComputedStyle(sheet);
-const bgUrl = sheetStyles.backgroundImage.slice(5, -2); // remove url("...")
+// Get the actual rendered background size & position of #sheet
+function getSheetBackgroundData() {
+  const sheetRect = document.getElementById('sheet').getBoundingClientRect();
+  return { left: sheetRect.left, top: sheetRect.top, width: sheetRect.width, height: sheetRect.height };
+}
 
-// We’ll compute each bubble's background-position so it perfectly crops from the photo
-function buildGrid(){
+function buildGrid() {
   grid.innerHTML = '';
-  const totalWidth = cols * bubbleSize + (cols - 1) * gap;
-  const totalHeight = rows * bubbleSize + (rows - 1) * gap;
+  const sheetData = getSheetBackgroundData();
 
   for(let r=0; r<rows; r++){
     for(let c=0; c<cols; c++){
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
 
-      // Set inherited background size and position to match the main sheet
-      bubble.style.backgroundImage = `url('${bgUrl}')`;
-      bubble.style.backgroundSize = `${totalWidth}px ${totalHeight}px`;
-      bubble.style.backgroundPosition = `-${c * (bubbleSize + gap)}px -${r * (bubbleSize + gap)}px`;
+      // Calculate background position to crop correct part of the image
+      const offsetX = c * (bubbleSize + gap);
+      const offsetY = r * (bubbleSize + gap);
 
-      // Clicking logic
+      bubble.style.setProperty('--bgX', `-${offsetX}px`);
+      bubble.style.setProperty('--bgY', `-${offsetY}px`);
+
+      const before = document.createElement('style');
+      // Inject a specific rule for this bubble’s ::before
+      before.textContent = `
+        .bubble:nth-child(${r*cols + c + 1})::before {
+          background-size: ${sheetData.width}px ${sheetData.height}px;
+          background-position: calc(${offsetX * -1}px) calc(${offsetY * -1}px);
+        }
+      `;
+      document.head.appendChild(before);
+
       bubble.addEventListener('click', ()=>{
         if(last && last !== bubble) last.classList.remove('popped');
         bubble.classList.toggle('popped');
@@ -124,6 +126,7 @@ function buildGrid(){
 }
 
 buildGrid();
+window.addEventListener('resize', buildGrid);
 </script>
 </body>
 </html>

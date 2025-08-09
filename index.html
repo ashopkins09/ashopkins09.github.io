@@ -3,11 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>My Home Page</title>
-
-<!-- Hachi Maru Pop font -->
+<title>Bubble Wrap Background</title>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
-
 <style>
   :root {
     --bg-1: #f5faff;
@@ -33,10 +30,6 @@
     overflow-x: hidden;
   }
 
-  .lang-ja {
-    display: none;
-  }
-
   .page {
     position: relative;
     min-height: 100vh;
@@ -47,87 +40,100 @@
     inset: 0;
     z-index: 0;
     overflow: visible;
+    pointer-events: none; /* Disable pointer events on background container */
   }
 
   .blobs {
     position: absolute;
-    inset: -20% -10% -20% -10%;
+    inset: 0;
     filter: url(#goo);
-    pointer-events: none;
+    pointer-events: none; /* Disable pointer events on blobs container */
+  }
+
+  /* Individual blobs container to allow pointer events on blobs */
+  .blob-wrapper {
+    position: fixed;
+    inset: 0;
+    pointer-events: auto; /* Enable pointer events here */
   }
 
   .blob {
     position: absolute;
-    width: clamp(180px, 25vw, 500px);
+    width: clamp(150px, 20vw, 300px);
     aspect-ratio: 1;
     border-radius: 50%;
     mix-blend-mode: multiply;
-    opacity: 0.4;
+    opacity: 0.5;
     background-repeat: no-repeat;
     background-size: cover;
     cursor: pointer;
-    pointer-events: auto; /* enable hover and click */
     user-select: none;
-    transition: transform 0.15s ease-out;
-    animation: bubbleFloat 6s ease-in-out infinite;
+    animation: bubblePulse 4s ease-in-out infinite;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    will-change: transform, box-shadow;
   }
 
-  /* Different colors for blobs */
+  /* Colors & positions for bubbles */
   .b1 {
-    left: 5%;
-    top: 10%;
+    left: 10%;
+    top: 20%;
     background: radial-gradient(circle at 30% 20%, #73c3ff, #b0e1ff);
     animation-delay: 0s;
   }
 
   .b2 {
-    right: 8%;
-    top: 5%;
+    left: 40%;
+    top: 10%;
     background: radial-gradient(circle at 40% 30%, #a87bff, #d2b8ff);
-    animation-delay: 2s;
+    animation-delay: 1.2s;
   }
 
   .b3 {
-    left: 20%;
-    bottom: -5%;
+    right: 20%;
+    top: 15%;
     background: radial-gradient(circle at 40% 40%, #ffb0d0, #ffd6e7);
-    animation-delay: 4s;
+    animation-delay: 2.4s;
   }
 
-  @keyframes bubbleFloat {
+  .b4 {
+    left: 30%;
+    bottom: 10%;
+    background: radial-gradient(circle at 50% 50%, #73c3ff, #b0e1ff);
+    animation-delay: 0.8s;
+  }
+
+  .b5 {
+    right: 25%;
+    bottom: 20%;
+    background: radial-gradient(circle at 40% 40%, #a87bff, #d2b8ff);
+    animation-delay: 1.6s;
+  }
+
+  /* Continuous gentle pulse */
+  @keyframes bubblePulse {
     0%, 100% {
       transform: scale(1);
-      opacity: 0.4;
+      opacity: 0.5;
+      box-shadow: none;
     }
     50% {
       transform: scale(1.08);
-      opacity: 0.6;
+      opacity: 0.7;
+      box-shadow: 0 0 8px 4px rgba(255 255 255 / 0.4);
     }
   }
 
-  .blob:active,
-  .blob.pop {
-    animation: popEffect 0.3s forwards;
+  /* Pop animation triggered by click or hover */
+  .blob.pop,
+  .blob:hover {
+    animation-play-state: paused;
+    transform: scale(1.25);
+    opacity: 1;
+    box-shadow: 0 0 12px 6px rgba(255 255 255 / 0.7);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
 
-  @keyframes popEffect {
-    0% {
-      transform: scale(1);
-      opacity: 0.6;
-      box-shadow: none;
-    }
-    50% {
-      transform: scale(1.25);
-      opacity: 1;
-      box-shadow: 0 0 10px 4px rgba(255, 255, 255, 0.8);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 0.4;
-      box-shadow: none;
-    }
-  }
-
+  /* Container styles */
   .container {
     position: relative;
     z-index: 10;
@@ -251,9 +257,14 @@
 <main class="page">
   <div class="bg">
     <div class="blobs" aria-hidden="true">
+      <!-- This container disables pointer events for goo filter -->
+    </div>
+    <div class="blob-wrapper" aria-hidden="false">
       <div class="blob b1"></div>
       <div class="blob b2"></div>
       <div class="blob b3"></div>
+      <div class="blob b4"></div>
+      <div class="blob b5"></div>
     </div>
   </div>
 
@@ -307,45 +318,43 @@
 </main>
 
 <script>
-  (() => {
-    const langToggle = document.getElementById('langToggle');
-    let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
-    updateLanguage(currentLang);
+(() => {
+  const langToggle = document.getElementById('langToggle');
+  let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
+  updateLanguage(currentLang);
 
-    langToggle.addEventListener('click', () => {
-      const newLang = currentLang === 'en' ? 'ja' : 'en';
-      if (currentLang === 'en' && newLang === 'ja') {
-        alert("Weeb mode activated 🇯🇵✨");
-      }
-      currentLang = newLang;
-      updateLanguage(currentLang);
-    });
-
-    function updateLanguage(lang) {
-      if (lang === 'ja') {
-        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
-        langToggle.textContent = "English";
-      } else {
-        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
-        langToggle.textContent = "日本語";
-      }
+  langToggle.addEventListener('click', () => {
+    const newLang = currentLang === 'en' ? 'ja' : 'en';
+    if (currentLang === 'en' && newLang === 'ja') {
+      alert("Weeb mode activated 🇯🇵✨");
     }
+    currentLang = newLang;
+    updateLanguage(currentLang);
+  });
 
-    // Bubble wrap pop effect on blobs
-    const blobs = document.querySelectorAll('.blob');
-    blobs.forEach(blob => {
-      blob.addEventListener('click', () => {
-        blob.classList.add('pop');
-        setTimeout(() => {
-          blob.classList.remove('pop');
-        }, 300);
-      });
+  function updateLanguage(lang) {
+    if (lang === 'ja') {
+      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
+      langToggle.textContent = "English";
+    } else {
+      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
+      langToggle.textContent = "日本語";
+    }
+  }
+
+  // Bubble wrap "pop" effect on click or tap
+  const blobs = document.querySelectorAll('.blob');
+  blobs.forEach(blob => {
+    blob.addEventListener('click', () => {
+      blob.classList.add('pop');
+      setTimeout(() => {
+        blob.classList.remove('pop');
+      }, 300);
     });
-
-    // Subtle floating already done by CSS animation bubbleFloat
-  })();
+  });
+})();
 </script>
 
 </body>

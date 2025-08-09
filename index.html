@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bubble Wrap - Crinkled Pop Effect</title>
+<title>Bubble Wrap - Subtle Crinkle Effect</title>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
 <style>
   html, body {
@@ -46,29 +46,21 @@
       box-shadow:
         inset 0 4px 6px rgba(255 255 255 / 0.9),
         0 3px 5px rgba(0 0 0 / 0.1);
-      clip-path: circle(50% at 50% 50%);
+      filter: none;
     }
     50% {
       transform: scale(0.7);
       box-shadow:
         inset 0 2px 3px rgba(0 0 0 / 0.3),
         0 1px 2px rgba(0 0 0 / 0.2);
-      clip-path: polygon(
-        45% 10%, 60% 15%, 75% 5%, 85% 20%, 95% 40%,
-        90% 60%, 80% 75%, 60% 85%, 40% 80%, 20% 90%,
-        15% 70%, 10% 50%, 20% 30%, 30% 15%, 40% 10%
-      );
+      filter: url(#crinkle);
     }
     100% {
       transform: scale(0.7);
       box-shadow:
         inset 0 2px 3px rgba(0 0 0 / 0.3),
         0 1px 2px rgba(0 0 0 / 0.2);
-      clip-path: polygon(
-        45% 10%, 60% 15%, 75% 5%, 85% 20%, 95% 40%,
-        90% 60%, 80% 75%, 60% 85%, 40% 80%, 20% 90%,
-        15% 70%, 10% 50%, 20% 30%, 30% 15%, 40% 10%
-      );
+      filter: url(#crinkle);
     }
   }
 
@@ -78,25 +70,21 @@
       box-shadow:
         inset 0 2px 3px rgba(0 0 0 / 0.3),
         0 1px 2px rgba(0 0 0 / 0.2);
-      clip-path: polygon(
-        45% 10%, 60% 15%, 75% 5%, 85% 20%, 95% 40%,
-        90% 60%, 80% 75%, 60% 85%, 40% 80%, 20% 90%,
-        15% 70%, 10% 50%, 20% 30%, 30% 15%, 40% 10%
-      );
+      filter: url(#crinkle);
     }
     50% {
       transform: scale(0.85);
       box-shadow:
         inset 0 3px 4px rgba(0 0 0 / 0.15),
         0 2px 3px rgba(0 0 0 / 0.1);
-      clip-path: circle(45% at 50% 50%);
+      filter: none;
     }
     100% {
       transform: scale(1);
       box-shadow:
         inset 0 4px 6px rgba(255 255 255 / 0.9),
         0 3px 5px rgba(0 0 0 / 0.1);
-      clip-path: circle(50% at 50% 50%);
+      filter: none;
     }
   }
 
@@ -134,6 +122,16 @@
 </head>
 <body>
 
+<!-- SVG filter for subtle crinkle -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="crinkle" x="0" y="0" width="100%" height="100%" >
+    <feTurbulence id="turbulence" baseFrequency="0.03 0.04" numOctaves="2" result="turbulence" seed="2">
+      <animate attributeName="baseFrequency" values="0.03 0.04;0.06 0.08;0.03 0.04" dur="4s" repeatCount="indefinite" />
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+
 <div id="bubble-wrap" aria-hidden="true"></div>
 
 <div class="container">
@@ -164,21 +162,16 @@
 
       bubble.addEventListener('click', () => {
         if (bubble === poppedBubble) {
-          // Do nothing if same bubble clicked again
-          return;
+          return; // ignore repeated click
         }
 
         if (poppedBubble) {
-          // Unpop previous bubble with animation
           poppedBubble.classList.remove('pop');
-          // Force reflow to restart animation
-          void poppedBubble.offsetWidth;
+          void poppedBubble.offsetWidth; // reflow for animation
           poppedBubble.classList.add('unpop');
-
           poppedBubble.addEventListener('animationend', () => onUnpopAnimationEnd(poppedBubble), { once: true });
         }
 
-        // Pop clicked bubble
         bubble.classList.add('pop');
         const soundClone = popSound.cloneNode();
         soundClone.play();

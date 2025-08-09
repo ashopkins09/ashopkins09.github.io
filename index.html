@@ -82,7 +82,6 @@
     }
   }
 
-  /* Animate with this class */
   .pop {
     animation: pop 0.25s ease forwards;
   }
@@ -244,10 +243,14 @@
   </footer>
 </section>
 
+<!-- Audio element for popping sound -->
+<audio id="popSound" preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+
 <script>
 (() => {
   const bubbleWrap = document.getElementById('bubble-wrap');
   const langToggle = document.getElementById('langToggle');
+  const popSound = document.getElementById('popSound');
   let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
 
   updateLanguage(currentLang);
@@ -289,6 +292,11 @@
       bubble.addEventListener('click', () => {
         if (bubble.classList.contains('pop')) return; // prevent retrigger while animating
         bubble.classList.add('pop');
+
+        // Play popping sound: clone to allow overlapping quickly
+        const soundClone = popSound.cloneNode();
+        soundClone.play();
+
         bubble.addEventListener('animationend', () => {
           bubble.classList.remove('pop');
         }, { once: true });

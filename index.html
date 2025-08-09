@@ -46,7 +46,7 @@
     position: fixed;
     inset: 0;
     z-index: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .blobs {
@@ -63,376 +63,51 @@
     border-radius: 50%;
     mix-blend-mode: multiply;
     opacity: 0.4;
-    animation: float 16s ease-in-out infinite;
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
+    pointer-events: auto; /* enable hover and click */
+    user-select: none;
+    transition: transform 0.15s ease-out;
+    animation: bubbleFloat 6s ease-in-out infinite;
   }
 
+  /* Different colors for blobs */
   .b1 {
     left: 5%;
     top: 10%;
     background: radial-gradient(circle at 30% 20%, #73c3ff, #b0e1ff);
+    animation-delay: 0s;
   }
 
   .b2 {
     right: 8%;
     top: 5%;
     background: radial-gradient(circle at 40% 30%, #a87bff, #d2b8ff);
-    animation-delay: 3s;
+    animation-delay: 2s;
   }
 
   .b3 {
     left: 20%;
     bottom: -5%;
     background: radial-gradient(circle at 40% 40%, #ffb0d0, #ffd6e7);
-    animation-delay: 6s;
+    animation-delay: 4s;
   }
 
-  @keyframes float {
+  @keyframes bubbleFloat {
     0%, 100% {
-      transform: translateY(0);
+      transform: scale(1);
+      opacity: 0.4;
     }
     50% {
-      transform: translateY(-20px);
+      transform: scale(1.08);
+      opacity: 0.6;
     }
   }
 
-  .container {
-    position: relative;
-    z-index: 10;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 24px;
+  .blob:active,
+  .blob.pop {
+    animation: popEffect 0.3s forwards;
   }
 
-  .site-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 40px;
-  }
-
-  .logo {
-    font-weight: 800;
-    font-size: 20px;
-    color: var(--accent-1);
-  }
-
-  .logo span {
-    color: var(--accent-2);
-  }
-
-  .nav a {
-    color: #334;
-    text-decoration: none;
-    margin-left: 18px;
-    font-weight: 500;
-    font-size: 14px;
-  }
-
-  .hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .glass-card {
-    --tiltX: 0;
-    --tiltY: 0;
-    width: var(--card-width);
-    padding: 28px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, var(--glass-alpha));
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(12px) saturate(1.2);
-    -webkit-backdrop-filter: blur(12px) saturate(1.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s ease;
-  }
-
-  .glass-inner h1 {
-    margin-top: 0;
-    font-size: 2rem;
-    color: #223;
-  }
-
-  .lead {
-    color: #445;
-    font-weight: 400;
-    margin: 0 0 18px;
-  }
-
-  .btn {
-    display: inline-block;
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-weight: 600;
-    margin-right: 10px;
-    text-decoration: none;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .btn.primary {
-    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-    color: #fff;
-  }
-
-  .btn.ghost {
-    background: transparent;
-    color: #334;
-  }
-
-  .btn:focus {
-    outline: 2px solid var(--accent-1);
-    outline-offset: 2px;
-  }
-
-  .site-footer {
-    margin-top: 44px;
-    font-size: 13px;
-    text-align: center;
-    color: #667;
-  }
-
-  .lang-toggle {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(6px);
-    border-radius: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    user-select: none;
-  }
-
-  /* iPhone Safari compatible video style */
-  #video {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  #enableCameraBtn {
-    margin-bottom: 24px;
-  }
-
-  #errorMessage {
-    color: red;
-    font-weight: 600;
-    margin-bottom: 20px;
-  }
-
-  .actions {
-    margin-top: 12px;
-  }
-</style>
-</head>
-<body>
-
-<svg style="position: absolute; width:0; height:0; pointer-events:none;" aria-hidden="true" >
-  <defs>
-    <filter id="goo">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-      <feColorMatrix in="blur" mode="matrix" values="
-         1 0 0 0 0
-         0 1 0 0 0
-         0 0 1 0 0
-         0 0 0 18 -7" result="goo" />
-      <feBlend in="SourceGraphic" in2="goo" />
-    </filter>
-  </defs>
-</svg>
-
-<main class="page">
-  <div class="bg">
-    <div class="blobs" aria-hidden="true">
-      <div class="blob b1"></div>
-      <div class="blob b2"></div>
-      <div class="blob b3"></div>
-    </div>
-  </div>
-
-  <section class="container">
-    <header class="site-header">
-      <div class="logo">
-        <span class="lang-en">My</span><span class="lang-ja">マイ</span>
-        <span> </span>
-        <span class="lang-en">Home</span><span class="lang-ja">ホーム</span>
-      </div>
-      <nav class="nav">
-        <a href="#"><span class="lang-en">About Me</span><span class="lang-ja">私について</span></a>
-        <a href="#"><span class="lang-en">Projects</span><span class="lang-ja">プロジェクト</span></a>
-        <a href="#"><span class="lang-en">Contact</span><span class="lang-ja">連絡先</span></a>
-      </nav>
-      <button class="lang-toggle" id="langToggle">日本語</button>
-    </header>
-
-    <div class="hero" style="flex-direction: column; align-items: center;">
-      <button id="enableCameraBtn" class="btn primary" type="button">
-        <span class="lang-en">Enable Camera Face Tracking</span>
-        <span class="lang-ja">カメラ顔認識を有効にする</span>
-      </button>
-
-      <div id="errorMessage"></div>
-
-      <div class="glass-card" id="glassCard">
-        <div class="glass-inner">
-          <h1>
-            <span class="lang-en">Hi, I’m [Your Name]</span>
-            <span class="lang-ja">こんにちは、[あなたの名前]です</span>
-          </h1>
-          <p class="lead">
-            <span class="lang-en">Welcome to my personal corner of the internet. Here you’ll find my work, my passions, and a few experiments I’ve been playing with.</span>
-            <span class="lang-ja">私のインターネット上の個人的な空間へようこそ。ここでは私の作品、情熱、そしていくつかの実験を見ることができます。</span>
-          </p>
-          <div class="actions">
-            <a href="#" class="btn primary">
-              <span class="lang-en">See My Work</span>
-              <span class="lang-ja">作品を見る</span>
-            </a>
-            <a href="#" class="btn ghost">
-              <span class="lang-en">Get in Touch</span>
-              <span class="lang-ja">連絡を取る</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <footer class="site-footer">
-      <p>
-        <span class="lang-en">© 2025 [Your Name] — Designed with CSS & JS</span>
-        <span class="lang-ja">© 2025 [あなたの名前] — CSSとJSでデザイン</span>
-      </p>
-    </footer>
-  </section>
-</main>
-
-<video id="video" autoplay muted playsinline></video>
-
-<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
-
-<script>
-  (async () => {
-    const card = document.getElementById('glassCard');
-    const blobs = document.querySelectorAll('.blob');
-    const langToggle = document.getElementById('langToggle');
-    const video = document.getElementById('video');
-    const enableCameraBtn = document.getElementById('enableCameraBtn');
-    const errorMessage = document.getElementById('errorMessage');
-
-    let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
-    updateLanguage(currentLang);
-
-    langToggle.addEventListener('click', () => {
-      const newLang = currentLang === 'en' ? 'ja' : 'en';
-      if (currentLang === 'en' && newLang === 'ja') {
-        alert("Weeb mode activated 🇯🇵✨");
-      }
-      currentLang = newLang;
-      updateLanguage(currentLang);
-    });
-
-    function updateLanguage(lang) {
-      if (lang === 'ja') {
-        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
-        langToggle.textContent = "English";
-      } else {
-        document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
-        langToggle.textContent = "日本語";
-      }
-    }
-
-    // Animate blobs floating
-    let t = 0;
-    function idleLoop() {
-      t += 0.005;
-      blobs.forEach((b, i) => {
-        const dx = Math.sin(t * (0.6 + i * 0.2)) * (6 + i * 4);
-        const dy = Math.cos(t * (0.4 + i * 0.15)) * (4 + i * 3);
-        b.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-      });
-      requestAnimationFrame(idleLoop);
-    }
-    idleLoop();
-
-    const maxTilt = 15; // Increased tilt for stronger effect
-    const smoothingFactor = 0.05; // Lower for smoother, less jittery movement
-
-    function applyTilt(tiltX, tiltY, translateX = 0, translateY = 0) {
-      card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateX(${translateX}px) translateY(${translateY}px)`;
-    }
-
-    // Smoothing variables
-    let prevTiltX = 0;
-    let prevTiltY = 0;
-    let prevTranslateX = 0;
-    let prevTranslateY = 0;
-
-    async function detectFace() {
-      if (video.readyState < 2) {
-        requestAnimationFrame(detectFace);
-        return;
-      }
-      const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions());
-      if (detection) {
-        const box = detection.box;
-        const centerX = box.x + box.width / 2;
-        const centerY = box.y + box.height / 2;
-        const vw = video.videoWidth;
-        const vh = video.videoHeight;
-
-        const nx = (centerX / vw) * 2 - 1; // normalize to [-1,1]
-        const ny = (centerY / vh) * 2 - 1; // normalize to [-1,1]
-
-        const targetTiltY = nx * maxTilt;
-        const targetTiltX = -ny * maxTilt;
-        const targetTranslateX = nx * 20;
-        const targetTranslateY = ny * 20;
-
-        // Smooth interpolation
-        prevTiltX += (targetTiltX - prevTiltX) * smoothingFactor;
-        prevTiltY += (targetTiltY - prevTiltY) * smoothingFactor;
-        prevTranslateX += (targetTranslateX - prevTranslateX) * smoothingFactor;
-        prevTranslateY += (targetTranslateY - prevTranslateY) * smoothingFactor;
-
-        applyTilt(prevTiltX.toFixed(2), prevTiltY.toFixed(2), prevTranslateX.toFixed(2), prevTranslateY.toFixed(2));
-      } else {
-        // Slowly reset when no face
-        prevTiltX += (0 - prevTiltX) * smoothingFactor;
-        prevTiltY += (0 - prevTiltY) * smoothingFactor;
-        prevTranslateX += (0 - prevTranslateX) * smoothingFactor;
-        prevTranslateY += (0 - prevTranslateY) * smoothingFactor;
-        applyTilt(prevTiltX.toFixed(2), prevTiltY.toFixed(2), prevTranslateX.toFixed(2), prevTranslateY.toFixed(2));
-      }
-      requestAnimationFrame(detectFace);
-    }
-
-    await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
-
-    enableCameraBtn.addEventListener('click', async () => {
-      errorMessage.textContent = '';
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-        video.srcObject = stream;
-        await video.play();
-        enableCameraBtn.style.display = 'none';
-        detectFace();
-      } catch (err) {
-        errorMessage.textContent = (currentLang === 'ja') ?
-          'カメラへのアクセスに失敗しました: ' + err.message :
-          'Error accessing camera: ' + err.message;
-      }
-    });
-  })();
-</script>
-
-</body>
-</html>
+  @keyframes popEffec

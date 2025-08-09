@@ -6,61 +6,39 @@
 <title>Bubble Wrap Background</title>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --bg-1: #f5faff;
-    --bg-2: #dff4ff;
-    --accent-1: #73c3ff;
-    --accent-2: #a87bff;
-    --glass-alpha: 0.35;
-    --glass-border: rgba(255,255,255,0.3);
-    --card-width: clamp(260px, 45vw, 720px);
-    --font-sans: 'Hachi Maru Pop', cursive;
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Hachi Maru Pop', cursive;
+    background: linear-gradient(120deg, #f5faff, #dff4ff);
+    overflow: hidden;
   }
 
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    font-family: var(--font-sans);
-    background: linear-gradient(120deg, var(--bg-1), var(--bg-2));
-    color: #223;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
-
-  /* Bubble wrap background grid */
   #bubble-wrap {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, 48px);
     grid-auto-rows: 48px;
-    gap: 0px;
-    z-index: 0;
+    justify-content: center; /* center bubbles horizontally */
+    gap: 4px;
+    padding: 8px;
     user-select: none;
-    pointer-events: auto; /* Allow clicks */
-    background: transparent;
+    z-index: 0;
   }
 
   .bubble {
-    background:
-      radial-gradient(circle at 40% 40%, #ffffff, #c0dfff 60%, #93caff 90%);
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #fff, #c0dfff 60%, #93caff 90%);
     box-shadow:
       inset 0 4px 6px rgba(255 255 255 / 0.9),
       0 3px 5px rgba(0 0 0 / 0.1);
-    width: 40px;
-    height: 40px;
     cursor: pointer;
-    will-change: transform, box-shadow;
     transform-origin: center;
-    margin: 4px; /* spacing between bubbles */
+    transition: box-shadow 0.2s ease;
   }
 
-  /* Pop animation keyframes */
   @keyframes pop {
     0% {
       transform: scale(1);
@@ -86,229 +64,78 @@
     animation: pop 0.4s ease forwards;
   }
 
-  /* Container and content */
+  /* Simple container to hold your content above bubbles */
   .container {
     position: relative;
-    z-index: 10; /* Make sure it's above bubbles */
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 24px;
-    pointer-events: auto;
-  }
-
-  .site-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 40px;
-  }
-
-  .logo {
-    font-weight: 800;
-    font-size: 20px;
-    color: var(--accent-1);
-  }
-
-  .logo span {
-    color: var(--accent-2);
-  }
-
-  .nav a {
-    color: #334;
-    text-decoration: none;
-    margin-left: 18px;
-    font-weight: 500;
-    font-size: 14px;
-  }
-
-  .hero {
-    display: flex;
-    justify-content: center;
-  }
-
-  .glass-card {
-    width: var(--card-width);
-    padding: 28px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, var(--glass-alpha));
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(12px) saturate(1.2);
-    -webkit-backdrop-filter: blur(12px) saturate(1.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-  }
-
-  .glass-inner h1 {
-    margin-top: 0;
-    font-size: 2rem;
-    color: #223;
-  }
-
-  .lead {
-    color: #445;
-    font-weight: 400;
-    margin: 0 0 18px;
-  }
-
-  .btn {
-    display: inline-block;
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-weight: 600;
-    margin-right: 10px;
-    text-decoration: none;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .btn.primary {
-    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-    color: #fff;
-  }
-
-  .btn.ghost {
-    background: transparent;
-    color: #334;
-  }
-
-  .site-footer {
-    margin-top: 44px;
-    font-size: 13px;
+    z-index: 10;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(255 255 255 / 0.6);
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0 0 0 / 0.1);
     text-align: center;
-    color: #667;
   }
 
-  .lang-toggle {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(6px);
-    border-radius: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    user-select: none;
+  h1 {
+    margin: 0 0 20px;
+    color: #223;
+    font-size: 2.5rem;
+  }
+
+  p {
+    color: #445;
+    font-size: 1.2rem;
   }
 </style>
 </head>
 <body>
 
-<!-- Bubble wrap container -->
 <div id="bubble-wrap" aria-hidden="true"></div>
 
-<section class="container">
-  <header class="site-header">
-    <div class="logo">
-      <span class="lang-en">My</span><span class="lang-ja">マイ</span>
-      <span> </span>
-      <span class="lang-en">Home</span><span class="lang-ja">ホーム</span>
-    </div>
-    <nav class="nav">
-      <a href="#"><span class="lang-en">About Me</span><span class="lang-ja">私について</span></a>
-      <a href="#"><span class="lang-en">Projects</span><span class="lang-ja">プロジェクト</span></a>
-      <a href="#"><span class="lang-en">Contact</span><span class="lang-ja">連絡先</span></a>
-    </nav>
-    <button class="lang-toggle" id="langToggle">日本語</button>
-  </header>
+<div class="container">
+  <h1>Bubble Wrap Fun!</h1>
+  <p>Click any bubble to pop it with sound and animation.</p>
+</div>
 
-  <div class="hero">
-    <div class="glass-card" id="glassCard">
-      <div class="glass-inner">
-        <h1>
-          <span class="lang-en">Hi, I’m [Your Name]</span>
-          <span class="lang-ja">こんにちは、[あなたの名前]です</span>
-        </h1>
-        <p class="lead">
-          <span class="lang-en">Welcome to my personal corner of the internet. Here you’ll find my work, my passions, and a few experiments I’ve been playing with.</span>
-          <span class="lang-ja">私のインターネット上の個人的な空間へようこそ。ここでは私の作品、情熱、そしていくつかの実験を見ることができます。</span>
-        </p>
-        <div class="actions">
-          <a href="#" class="btn primary">
-            <span class="lang-en">See My Work</span>
-            <span class="lang-ja">作品を見る</span>
-          </a>
-          <a href="#" class="btn ghost">
-            <span class="lang-en">Get in Touch</span>
-            <span class="lang-ja">連絡を取る</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <footer class="site-footer">
-    <p>
-      <span class="lang-en">© 2025 [Your Name] — Designed with CSS & JS</span>
-      <span class="lang-ja">© 2025 [あなたの名前] — CSSとJSでデザイン</span>
-    </p>
-  </footer>
-</section>
-
-<!-- Audio element for popping sound -->
-<audio id="popSound" preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="></audio>
+<!-- Basic pop sound from public domain short "pop" -->
+<audio id="popSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
 
 <script>
-(() => {
   const bubbleWrap = document.getElementById('bubble-wrap');
-  const langToggle = document.getElementById('langToggle');
   const popSound = document.getElementById('popSound');
-  let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
 
-  updateLanguage(currentLang);
-
-  langToggle.addEventListener('click', () => {
-    const newLang = currentLang === 'en' ? 'ja' : 'en';
-    if (currentLang === 'en' && newLang === 'ja') {
-      alert("Weeb mode activated 🇯🇵✨");
-    }
-    currentLang = newLang;
-    updateLanguage(currentLang);
-  });
-
-  function updateLanguage(lang) {
-    if (lang === 'ja') {
-      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
-      langToggle.textContent = "English";
-    } else {
-      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
-      langToggle.textContent = "日本語";
-    }
-  }
-
-  // Create bubbles to fill viewport in grid
   function createBubbles() {
     bubbleWrap.innerHTML = '';
     const columns = Math.floor(window.innerWidth / 48);
     const rows = Math.floor(window.innerHeight / 48);
-    const totalBubbles = columns * rows;
+    const total = columns * rows;
 
-    for (let i = 0; i < totalBubbles; i++) {
+    for (let i = 0; i < total; i++) {
       const bubble = document.createElement('div');
-      bubble.className = 'bubble';
-      bubbleWrap.appendChild(bubble);
+      bubble.classList.add('bubble');
 
       bubble.addEventListener('click', () => {
-        if (bubble.classList.contains('pop')) return; // Ignore if animating
+        if (bubble.classList.contains('pop')) return; // avoid double pops
 
         bubble.classList.add('pop');
 
-        // Play popping sound (clone for overlapping sounds)
+        // Play sound - clone audio for overlapping
         const soundClone = popSound.cloneNode();
         soundClone.play();
 
+        // Remove class after animation ends
         bubble.addEventListener('animationend', () => {
           bubble.classList.remove('pop');
         }, { once: true });
       });
+
+      bubbleWrap.appendChild(bubble);
     }
   }
 
   createBubbles();
-
   window.addEventListener('resize', createBubbles);
-})();
 </script>
 
 </body>

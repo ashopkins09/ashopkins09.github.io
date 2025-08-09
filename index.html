@@ -56,17 +56,35 @@
     width: 40px;
     height: 40px;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: box-shadow 0.15s ease;
     will-change: transform, box-shadow;
   }
 
-  .bubble:active,
-  .bubble.pop {
-    transform: scale(0.85);
-    box-shadow:
-      inset 0 1px 2px rgba(0 0 0 / 0.2),
-      0 1px 2px rgba(0 0 0 / 0.1);
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  /* Pop animation keyframes */
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+      box-shadow:
+        inset 0 4px 6px rgba(255 255 255 / 0.9),
+        0 3px 5px rgba(0 0 0 / 0.1);
+    }
+    50% {
+      transform: scale(0.75);
+      box-shadow:
+        inset 0 2px 3px rgba(0 0 0 / 0.3),
+        0 1px 2px rgba(0 0 0 / 0.2);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow:
+        inset 0 4px 6px rgba(255 255 255 / 0.9),
+        0 3px 5px rgba(0 0 0 / 0.1);
+    }
+  }
+
+  /* Animate with this class */
+  .pop {
+    animation: pop 0.25s ease forwards;
   }
 
   /* Container and content */
@@ -255,43 +273,32 @@
     }
   }
 
-  // Create enough bubbles to fill viewport in grid (approximate)
-  const columns = Math.floor(window.innerWidth / 48);
-  const rows = Math.floor(window.innerHeight / 48);
-  const totalBubbles = columns * rows;
-
-  for (let i = 0; i < totalBubbles; i++) {
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    bubbleWrap.appendChild(bubble);
-
-    // On click, add 'pop' class for 150ms to simulate popping effect
-    bubble.addEventListener('click', () => {
-      bubble.classList.add('pop');
-      setTimeout(() => {
-        bubble.classList.remove('pop');
-      }, 150);
-    });
-  }
-
-  // Optional: Rebuild bubbles on resize (basic)
-  window.addEventListener('resize', () => {
+  // Create bubbles to fill viewport in grid (approximate)
+  function createBubbles() {
     bubbleWrap.innerHTML = '';
-    const newCols = Math.floor(window.innerWidth / 48);
-    const newRows = Math.floor(window.innerHeight / 48);
-    const newTotal = newCols * newRows;
-    for (let i = 0; i < newTotal; i++) {
+    const columns = Math.floor(window.innerWidth / 48);
+    const rows = Math.floor(window.innerHeight / 48);
+    const totalBubbles = columns * rows;
+
+    for (let i = 0; i < totalBubbles; i++) {
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
       bubbleWrap.appendChild(bubble);
+
+      // On click, trigger pop animation by toggling class
       bubble.addEventListener('click', () => {
+        if (bubble.classList.contains('pop')) return; // prevent retrigger while animating
         bubble.classList.add('pop');
-        setTimeout(() => {
+        bubble.addEventListener('animationend', () => {
           bubble.classList.remove('pop');
-        }, 150);
+        }, { once: true });
       });
     }
-  });
+  }
+
+  createBubbles();
+
+  window.addEventListener('resize', createBubbles);
 })();
 </script>
 

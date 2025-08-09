@@ -36,10 +36,9 @@
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    grid-auto-rows: 40px;
-    gap: 8px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fill, 48px);
+    grid-auto-rows: 48px;
+    gap: 0px;
     z-index: 0;
     user-select: none;
     pointer-events: auto; /* Allow clicks */
@@ -56,9 +55,9 @@
     width: 40px;
     height: 40px;
     cursor: pointer;
-    transition: box-shadow 0.15s ease;
     will-change: transform, box-shadow;
-    transform-origin: center; /* Ensure scaling from center */
+    transform-origin: center;
+    margin: 4px; /* spacing between bubbles */
   }
 
   /* Pop animation keyframes */
@@ -84,7 +83,7 @@
   }
 
   .pop {
-    animation: pop 0.25s ease forwards;
+    animation: pop 0.4s ease forwards;
   }
 
   /* Container and content */
@@ -94,7 +93,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 40px 24px;
-    pointer-events: auto; /* Allow interaction */
+    pointer-events: auto;
   }
 
   .site-header {
@@ -278,7 +277,7 @@
     }
   }
 
-  // Create bubbles to fill viewport in grid (approximate)
+  // Create bubbles to fill viewport in grid
   function createBubbles() {
     bubbleWrap.innerHTML = '';
     const columns = Math.floor(window.innerWidth / 48);
@@ -291,14 +290,17 @@
       bubbleWrap.appendChild(bubble);
 
       bubble.addEventListener('click', () => {
-        // Restart animation by removing and forcing reflow before re-adding class
-        bubble.classList.remove('pop');
-        void bubble.offsetWidth; // trigger reflow
+        if (bubble.classList.contains('pop')) return; // Ignore if animating
+
         bubble.classList.add('pop');
 
-        // Play popping sound: clone to allow overlapping quickly
+        // Play popping sound (clone for overlapping sounds)
         const soundClone = popSound.cloneNode();
         soundClone.play();
+
+        bubble.addEventListener('animationend', () => {
+          bubble.classList.remove('pop');
+        }, { once: true });
       });
     }
   }

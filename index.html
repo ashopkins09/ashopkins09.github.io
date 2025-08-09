@@ -3,130 +3,415 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Photo-Realistic Bubble Wrap</title>
+<title>Ultra-Real Bubble Wrap — Inflated + Popped</title>
 <style>
-  :root {
-    --bubble-size: 84px;  /* size in pixels */
-    --gap: 18px;          /* spacing between bubbles */
-    --rows: 8;            /* adjust to fit */
+  :root{
+    --rows: 8;            /* tune these to match your photo scale */
     --cols: 10;
+    --bubble-size: 96;    /* visual bubble size (CSS px) */
+    --gap: 18;            /* gap between bubbles */
   }
-  html, body {
-    margin:0;
-    height:100%;
-    overflow:hidden;
-    background:#ccc;
-  }
-  #sheet {
+  html,body{ height:100%; margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto; background:#ddd; }
+  #app{
     position:relative;
     width:100%;
-    height:100%;
-    background: url('https://www.photos-public-domain.com/wp-content/uploads/2018/05/bubble-wrap-texture-2.jpg') center center / cover no-repeat;
+    height:100vh;
+    overflow:hidden;
+    background:#222 center center / cover no-repeat;
+    display:block;
   }
-  .bubble-grid {
-    position:absolute;
-    top:0; left:0;
-    width:100%; height:100%;
+
+  /* UI controls */
+  .controls{
+    position:fixed; left:12px; top:12px; z-index:90;
+    background: rgba(255,255,255,0.9); padding:10px; border-radius:10px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    display:flex; gap:8px; align-items:center; font-size:13px;
+  }
+  .controls input{ width:420px; padding:6px 8px; border-radius:6px; border:1px solid #ccc; }
+  .controls button{ padding:6px 8px; border-radius:6px; cursor:pointer; border:1px solid #bbb; background:#fff; }
+
+  /* grid container centered */
+  .gridwrap{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;
+  }
+  .bubble-grid{
     display:grid;
     grid-template-columns: repeat(var(--cols), var(--bubble-size));
     grid-template-rows: repeat(var(--rows), var(--bubble-size));
     gap: var(--gap);
-    justify-content:center;
-    align-content:center;
+    pointer-events:auto;
+    user-select:none;
   }
-  .bubble {
+
+  /* each bubble slot */
+  .bubble{
     width: var(--bubble-size);
     height: var(--bubble-size);
     border-radius:50%;
     position:relative;
+    overflow:visible;
     cursor:pointer;
-    overflow:hidden;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .14s ease;
+    display:flex; align-items:center; justify-content:center;
+    background: transparent;
   }
-  .bubble::before {
-    content:"";
-    position:absolute;
-    inset:0;
-    background-image: url('https://www.photos-public-domain.com/wp-content/uploads/2018/05/bubble-wrap-texture-2.jpg');
-    background-repeat: no-repeat;
-    border-radius:50%;
-    transition: transform 0.2s ease, filter 0.2s ease;
-  }
-  .bubble.popped::before {
-    transform: scaleY(0.8);
-    filter: brightness(0.85) contrast(1.2);
-  }
-  .bubble.popped::after {
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:50%;
-    background: repeating-linear-gradient(45deg,
-      rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 2px,
-      rgba(255,255,255,0.06) 2px, rgba(255,255,255,0.06) 4px);
-    opacity:0.25;
+
+  /* placeholder ring to preserve round shape (small translucent rim) */
+  .bubble .rim{
+    position:absolute; inset:0; border-radius:50%;
+    box-shadow: inset 0 6px 12px rgba(0,0,0,0.08);
     pointer-events:none;
+  }
+
+  /* the popped overlay (generated from popped source image) */
+  .bubble .popped-slice{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background-size: cover;
+    background-position: center;
+    pointer-events:none;
+    transform-origin:center;
+    transition: transform .14s ease, filter .18s ease, opacity .12s ease;
+    opacity:0;
+  }
+
+  .bubble.popped .popped-slice{
+    opacity:1;
+    transform: scaleY(0.78);
+    filter: brightness(0.9) contrast(1.08) saturate(0.98);
+  }
+
+  /* add a subtle texture overlay (creases) on popped */
+  .bubble .crease{
+    position:absolute; inset:0; border-radius:50%;
+    background: repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.03) 0 2px, rgba(0,0,0,0.03) 2px 4px);
+    mix-blend-mode: multiply;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .18s ease;
+  }
+  .bubble.popped .crease{ opacity:0.28; }
+
+  /* hint */
+  .hint {
+    position:fixed; right:12px; bottom:12px; z-index:90;
+    background: rgba(0,0,0,0.6); color:#fff; padding:8px 10px; border-radius:8px; font-size:13px;
+  }
+
+  /* small responsive tweak */
+  @media (max-width:700px){
+    :root{ --bubble-size:72px; --gap:12px; }
+    .controls input{ width:200px; }
   }
 </style>
 </head>
 <body>
-  <div id="sheet">
-    <div class="bubble-grid" id="grid"></div>
+  <div class="controls" role="toolbar" aria-label="Bubble wrap controls">
+    <label style="font-weight:600">Inflated (bg):</label>
+    <input id="inflatedUrl" type="text" value="https://cdn.pixabay.com/photo/2021/01/03/08/05/bubble-wrap-5872537_1280.jpg" />
+    <label style="font-weight:600">Popped (alt):</label>
+    <input id="poppedUrl" type="text" value="https://images.pexels.com/photos/6662653/pexels-photo-6662653.jpeg" />
+    <button id="loadBtn">Load</button>
+    <button id="downloadBtn" title="Download state as PNG">Export PNG</button>
+  </div>
+
+  <div id="app" aria-live="polite" aria-label="Interactive bubble wrap">
+    <div class="gridwrap">
+      <div class="bubble-grid" id="grid" role="grid" aria-label="Bubbles"></div>
+    </div>
+    <div class="hint">Click bubbles to pop — multiple can stay popped. If canvas cropping fails due to CORS, download the two images and run this file locally or host them together.</div>
   </div>
 
 <script>
-const grid = document.getElementById('grid');
-const rows = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows'));
-const cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols'));
-const bubbleSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bubble-size'));
-const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+/*
+  Ultra-Real Bubble Wrap
+  - Loads two images (inflated + popped).
+  - Aligns them using "cover" scaling logic so crops match.
+  - Crops from popped image on demand into small canvases and uses them as backgrounds.
+  - Handles window resize and devicePixelRatio.
 
-let last = null;
+  Notes on CORS:
+  - To draw an image into a canvas and read pixels, the image must allow cross-origin canvas usage.
+  - If you see errors or the popped slices appear blank, either:
+      * download both images into the same local folder and replace the URLs with local paths, or
+      * serve the HTML + images from a small local server (e.g., `npx http-server`) so CORS doesn't block.
+*/
 
-// Get the actual rendered background size & position of #sheet
-function getSheetBackgroundData() {
-  const sheetRect = document.getElementById('sheet').getBoundingClientRect();
-  return { left: sheetRect.left, top: sheetRect.top, width: sheetRect.width, height: sheetRect.height };
+const gridEl = document.getElementById('grid');
+const app = document.getElementById('app');
+const loadBtn = document.getElementById('loadBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const inflatedInput = document.getElementById('inflatedUrl');
+const poppedInput = document.getElementById('poppedUrl');
+
+let inflatedImg = new Image();
+let poppedImg = new Image();
+inflatedImg.crossOrigin = 'anonymous';
+poppedImg.crossOrigin = 'anonymous';
+
+let rows = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 8;
+let cols = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 10;
+let bubbleSizeCss = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bubble-size')) || 96;
+let gapCss = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 18;
+
+let poppedCache = new Map(); // key -> dataURL
+let poppedSet = new Set();   // track popped indexes
+
+// load example values initially (but don't start until images load)
+inflatedImg.src = inflatedInput.value;
+poppedImg.src = poppedInput.value;
+
+function onImagesReady(cb){
+  let readyCount = 0;
+  function check(){
+    readyCount++;
+    if(readyCount === 2) cb();
+  }
+  inflatedImg.onload = check;
+  poppedImg.onload = check;
+  inflatedImg.onerror = (e)=> { console.warn('Inflated image load error', e); check(); };
+  poppedImg.onerror = (e)=> { console.warn('Popped image load error', e); check(); };
 }
 
-function buildGrid() {
-  grid.innerHTML = '';
-  const sheetData = getSheetBackgroundData();
+// compute "cover" scale & offset of an image fitted into the container (same as CSS background-size: cover)
+function computeCoverFit(imgW, imgH, contW, contH){
+  const scale = Math.max(contW / imgW, contH / imgH);
+  const drawnW = imgW * scale;
+  const drawnH = imgH * scale;
+  const offsetX = (contW - drawnW) / 2;
+  const offsetY = (contH - drawnH) / 2;
+  return { scale, drawnW, drawnH, offsetX, offsetY };
+}
 
-  for(let r=0; r<rows; r++){
-    for(let c=0; c<cols; c++){
+// build bubble elements
+function buildGrid(){
+  gridEl.innerHTML = '';
+  poppedCache.clear();
+  poppedSet.clear();
+
+  // center grid by using grid container size equal to gridWidth x gridHeight via CSS (grid auto-centers using justify/align in .gridwrap)
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const idx = r*cols + c;
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
+      bubble.setAttribute('role','button');
+      bubble.setAttribute('aria-label', `Bubble ${idx+1}`);
+      bubble.dataset.idx = idx;
 
-      // Calculate background position to crop correct part of the image
-      const offsetX = c * (bubbleSize + gap);
-      const offsetY = r * (bubbleSize + gap);
+      // add rim / placeholders
+      const rim = document.createElement('div'); rim.className = 'rim';
+      const poppedSlice = document.createElement('div'); poppedSlice.className = 'popped-slice';
+      const crease = document.createElement('div'); crease.className = 'crease';
 
-      bubble.style.setProperty('--bgX', `-${offsetX}px`);
-      bubble.style.setProperty('--bgY', `-${offsetY}px`);
+      bubble.appendChild(rim);
+      bubble.appendChild(poppedSlice);
+      bubble.appendChild(crease);
 
-      const before = document.createElement('style');
-      // Inject a specific rule for this bubble’s ::before
-      before.textContent = `
-        .bubble:nth-child(${r*cols + c + 1})::before {
-          background-size: ${sheetData.width}px ${sheetData.height}px;
-          background-position: calc(${offsetX * -1}px) calc(${offsetY * -1}px);
-        }
-      `;
-      document.head.appendChild(before);
-
-      bubble.addEventListener('click', ()=>{
-        if(last && last !== bubble) last.classList.remove('popped');
-        bubble.classList.toggle('popped');
-        last = bubble.classList.contains('popped') ? bubble : null;
+      bubble.addEventListener('click', async (ev)=>{
+        ev.preventDefault();
+        await togglePop(idx, bubble, r, c);
       });
 
-      grid.appendChild(bubble);
+      gridEl.appendChild(bubble);
     }
   }
+
+  // set CSS of grid to exact bubble and gap values (in case CSS vars changed)
+  // already set via root CSS vars; nothing else required here.
 }
 
-buildGrid();
-window.addEventListener('resize', buildGrid);
+// toggle popped state
+async function togglePop(idx, bubbleEl, row, col){
+  const isPopped = poppedSet.has(idx);
+  if(isPopped){
+    poppedSet.delete(idx);
+    bubbleEl.classList.remove('popped');
+    return;
+  }
+
+  // create or reuse popped slice
+  const key = `${row}:${col}:${Math.round(window.devicePixelRatio)}`;
+  let dataUrl = poppedCache.get(key);
+  if(!dataUrl){
+    try{
+      dataUrl = await cropPoppedSlice(row, col);
+      poppedCache.set(key, dataUrl);
+    } catch(err){
+      console.error('Error cropping popped slice:', err);
+      alert('Cropping failed (likely CORS). See console for details. To fix, host the images locally or use CORS-enabled image URLs.');
+      return;
+    }
+  }
+  const sliceEl = bubbleEl.querySelector('.popped-slice');
+  sliceEl.style.backgroundImage = `url('${dataUrl}')`;
+  bubbleEl.classList.add('popped');
+  poppedSet.add(idx);
+}
+
+// crop the corresponding area from the popped image and return a dataURL
+async function cropPoppedSlice(row, col){
+  // container size for the background fit
+  const contRect = app.getBoundingClientRect();
+  const contW = contRect.width;
+  const contH = contRect.height;
+
+  // compute how the inflated/popped images are painted with cover fit
+  const fit = computeCoverFit(poppedImg.naturalWidth, poppedImg.naturalHeight, contW, contH);
+
+  // compute grid top-left in pixels (centered grid)
+  const gridWidth = cols * bubbleSizeCss + (cols - 1) * gapCss;
+  const gridHeight = rows * bubbleSizeCss + (rows - 1) * gapCss;
+  const gridLeft = (contW - gridWidth) / 2;
+  const gridTop  = (contH - gridHeight) / 2;
+
+  // compute the bubble's top-left in container coordinates
+  const sxInCont = gridLeft + col * (bubbleSizeCss + gapCss);
+  const syInCont = gridTop  + row * (bubbleSizeCss + gapCss);
+
+  // map container coord -> image source coord (because image is drawn with fit.scale and offset)
+  // iter: pixel in container at x maps to image pixel: (x - offsetX) / scale
+  const srcX = (sxInCont - fit.offsetX) / fit.scale;
+  const srcY = (syInCont - fit.offsetY) / fit.scale;
+  const srcW = bubbleSizeCss / fit.scale;
+  const srcH = bubbleSizeCss / fit.scale;
+
+  // account for devicePixelRatio to keep crispness
+  const DPR = Math.max(1, Math.round(window.devicePixelRatio || 1));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(srcW * DPR);
+  canvas.height = Math.ceil(srcH * DPR);
+  const ctx = canvas.getContext('2d');
+
+  // draw using image natural pixels -> canvas
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+  ctx.drawImage(poppedImg, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+
+  // Optionally: apply post-processing on the cropped canvas (tiny crinkle overlay)
+  // We'll add a subtle noise/crinkle by drawing a translucent pattern
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.fillStyle = 'rgba(255,255,255,0.03)';
+  for(let i=0;i<120;i++){
+    const rx = Math.random()*canvas.width, ry=Math.random()*canvas.height, rw = 1 + Math.random()*2, rh = 2 + Math.random()*6;
+    ctx.fillRect(rx, ry, rw, rh);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+
+  // return dataURL
+  return canvas.toDataURL('image/png');
+}
+
+// render inflated background into app element (cover)
+function renderBackground(){
+  // set CSS background to inflated image with cover
+  app.style.backgroundImage = `url('${inflatedImg.src}')`;
+  app.style.backgroundSize = 'cover';
+  app.style.backgroundPosition = 'center';
+}
+
+// re-layout on resize (we must clear cache because fit mapping changes)
+function onResize(){
+  poppedCache.clear();
+  buildGrid();
+  renderBackground();
+}
+window.addEventListener('resize', onResize);
+
+// initial wiring
+onImagesReady(()=> {
+  renderBackground();
+  buildGrid();
+});
+
+// UI: load images from inputs
+loadBtn.addEventListener('click', ()=>{
+  poppedCache.clear();
+  inflatedImg = new Image(); poppedImg = new Image();
+  inflatedImg.crossOrigin = 'anonymous'; poppedImg.crossOrigin='anonymous';
+  inflatedImg.src = inflatedInput.value.trim();
+  poppedImg.src = poppedInput.value.trim();
+  onImagesReady(()=> {
+    renderBackground();
+    buildGrid();
+  });
+});
+
+// Export current view (compose the background + popped slices onto a canvas)
+downloadBtn.addEventListener('click', async ()=>{
+  // build big canvas of app size
+  const rect = app.getBoundingClientRect();
+  const DPR = Math.max(1, Math.round(window.devicePixelRatio || 1));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(rect.width * DPR);
+  canvas.height = Math.ceil(rect.height * DPR);
+  const ctx = canvas.getContext('2d');
+
+  // draw inflated bg using the same cover fit
+  const fitBg = computeCoverFit(inflatedImg.naturalWidth, inflatedImg.naturalHeight, rect.width, rect.height);
+  ctx.drawImage(inflatedImg,
+    0,0,inflatedImg.naturalWidth, inflatedImg.naturalHeight,
+    fitBg.offsetX*DPR, fitBg.offsetY*DPR, fitBg.drawnW*DPR, fitBg.drawnH*DPR
+  );
+
+  // draw each popped slice at its position
+  for(const idxStr of poppedSet){
+    // find row/col
+    // poppedSet stores numbers; ensure we iterate properly
+  }
+  // easier: query DOM for popped bubbles
+  const poppedEls = document.querySelectorAll('.bubble.popped');
+  const gridRect = gridEl.getBoundingClientRect();
+  const appRect = app.getBoundingClientRect();
+
+  for(const el of poppedEls){
+    const idx = parseInt(el.dataset.idx,10);
+    const r = Math.floor(idx / cols);
+    const c = idx % cols;
+    // find src coordinates that we used earlier for cropping from poppedImg
+    const contW = rect.width, contH = rect.height;
+    const fit = computeCoverFit(poppedImg.naturalWidth, poppedImg.naturalHeight, contW, contH);
+    const gridWidth = cols * bubbleSizeCss + (cols - 1) * gapCss;
+    const gridHeight = rows * bubbleSizeCss + (rows - 1) * gapCss;
+    const gridLeft = (contW - gridWidth) / 2;
+    const gridTop  = (contH - gridHeight) / 2;
+    const sxInCont = gridLeft + c * (bubbleSizeCss + gapCss);
+    const syInCont = gridTop  + r * (bubbleSizeCss + gapCss);
+    const srcX = (sxInCont - fit.offsetX) / fit.scale;
+    const srcY = (syInCont - fit.offsetY) / fit.scale;
+    const srcW = bubbleSizeCss / fit.scale;
+    const srcH = bubbleSizeCss / fit.scale;
+
+    // draw the poppedImg slice onto final canvas at correct place
+    ctx.drawImage(poppedImg,
+      srcX, srcY, srcW, srcH,
+      (sxInCont)*DPR, (syInCont)*DPR, bubbleSizeCss*DPR, bubbleSizeCss*DPR
+    );
+
+    // add the flatten transform effect by scaling vertically a bit (approx)
+    // We'll create a temporary canvas to scale the slice vertically and then draw
+    // For simplicity we skip extra transform in final export (visual difference minimal)
+  }
+
+  // open in new tab
+  const data = canvas.toDataURL('image/png');
+  const w = window.open('');
+  if(w){
+    const img = w.document.createElement('img');
+    img.src = data;
+    img.style.maxWidth='100%';
+    w.document.body.style.margin='0';
+    w.document.body.appendChild(img);
+  } else {
+    alert('Popup blocked — right-click the Export button and open in a new tab if needed.');
+  }
+});
+
 </script>
 </body>
 </html>

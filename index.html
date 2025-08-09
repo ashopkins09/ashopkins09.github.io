@@ -10,7 +10,7 @@
     --glass-bg: rgba(255,255,255,0.12);
     --glass-border: rgba(255,255,255,0.25);
     --accent: #7aa7ff;
-    --bubble-size: 48px; /* base bubble size (will scale on smaller screens) */
+    --bubble-size: 48px;
     --gap: 12px;
   }
 
@@ -19,11 +19,8 @@
     margin:0;
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     background: linear-gradient(180deg, #dff0ff 0%, #f7fbff 100%);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
   }
 
-  /* Container */
   .page{
     min-height:100vh;
     display:grid;
@@ -32,7 +29,6 @@
     overflow:hidden;
   }
 
-  /* Bubble wrap container overlays whole page */
   #bubble-wrap{
     position: absolute;
     inset: 0;
@@ -47,57 +43,42 @@
     pointer-events: auto;
   }
 
-  /* Bubble element */
+  /* Unpopped bubble */
   .bubble {
     width: var(--bubble-size);
     height: var(--bubble-size);
     border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.95) 0 20%,
-                               rgba(255,255,255,0.6) 21% 40%,
-                               rgba(150,180,255,0.22) 41% 60%,
-                               rgba(100,140,255,0.06) 61% 100%);
-    box-shadow: 0 8px 14px rgba(20,40,80,0.12), inset 0 -6px 18px rgba(0,0,0,0.12);
-    transition:
-      transform 220ms cubic-bezier(.2,.9,.3,1),
-      box-shadow 220ms,
-      filter 220ms;
+                                 rgba(255,255,255,0.6) 21% 40%,
+                                 rgba(150,180,255,0.22) 41% 60%,
+                                 rgba(100,140,255,0.06) 61% 100%);
+    box-shadow: 0 8px 14px rgba(20,40,80,0.12),
+                inset 0 -6px 18px rgba(0,0,0,0.12);
+    transition: all 200ms cubic-bezier(.25,.8,.25,1);
     transform-origin: center center;
     user-select: none;
-    -webkit-user-select:none;
-    touch-action: none;
     cursor: pointer;
-    z-index: 1;
   }
 
-  /* Slight staggering for realism using nth-child */
+  /* Slight stagger for realism */
   .bubble[data-row-offset="1"] { transform: translateX(12px); }
 
-  /* Popped state */
+  /* Popped bubble - concave look */
   .bubble.popped {
-    transform: scaleY(0.18) scaleX(1.06) translateY(2px);
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.35);
-    filter: saturate(0.85) brightness(0.98);
-    transition: transform 180ms cubic-bezier(.3,.1,.2,1), box-shadow 180ms;
-    pointer-events: none; /* can't pop twice */
-    opacity: 0.95;
+    background: radial-gradient(circle at 50% 60%, rgba(0,0,0,0.25) 0 25%,
+                                 rgba(40,60,100,0.2) 26% 50%,
+                                 rgba(200,220,255,0.1) 51% 100%);
+    box-shadow: inset 0 4px 8px rgba(0,0,0,0.4),
+                inset 0 -2px 4px rgba(255,255,255,0.08);
+    transform: scale(1) translateY(0);
+    opacity: 0.92;
+    pointer-events: none;
   }
 
-  /* Visually flat popped underside highlight (small ring) */
-  .bubble.popped::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:50%;
-    box-shadow: inset 0 -3px 6px rgba(255,255,255,0.06);
-    pointer-events:none;
-  }
-
-  /* Liquid glass card */
   .glass-card{
     position: relative;
     z-index: 3;
     width: min(980px, 92%);
-    max-width: 980px;
     padding: clamp(18px, 3vw, 36px);
     border-radius: 18px;
     background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.06));
@@ -112,7 +93,6 @@
     overflow: hidden;
   }
 
-  /* Glass left decoration (liquid sheen) */
   .glass-card::before{
     content:"";
     position:absolute;
@@ -138,7 +118,6 @@
     font-size: clamp(20px, 3.6vw, 32px);
     line-height:1.05;
     color: #052b54;
-    letter-spacing: -0.02em;
   }
 
   p.lead{
@@ -162,23 +141,13 @@
     background: linear-gradient(180deg, #ffffff 0%, #f1f7ff 100%);
     box-shadow: 0 6px 18px rgba(20,40,80,0.08);
     color: #05407a;
-    transition: transform 120ms ease, box-shadow 120ms;
   }
-  .btn:active{ transform: translateY(1px) scale(0.997); }
   .btn.primary{
     background: linear-gradient(180deg, #6fb0ff 0%, #3c8df2 100%);
     color: white;
     box-shadow: 0 10px 30px rgba(60,140,242,0.28);
   }
 
-  /* Small info / instructions */
-  .info{
-    font-size: 13px;
-    color: rgba(3,29,56,0.7);
-    margin-top:8px;
-  }
-
-  /* Footer credit */
   .credit{
     font-size:12px;
     color: rgba(3,29,56,0.6);
@@ -186,93 +155,56 @@
     white-space:nowrap;
   }
 
-  /* Responsive - reduce bubble size on narrow screens */
   @media (max-width:720px){
     :root { --bubble-size: 36px; --gap: 10px; }
     .glass-card { padding: 16px; border-radius: 14px; }
-  }
-
-  /* Respect reduced motion preferences */
-  @media (prefers-reduced-motion: reduce){
-    .bubble, .bubble.popped { transition: none; animation: none; }
-    .btn { transition: none; }
-    .glass-card { transition: none; }
   }
 </style>
 </head>
 <body>
   <div class="page" id="page">
-    <div id="bubble-wrap" aria-hidden="false"></div>
+    <div id="bubble-wrap"></div>
 
-    <main class="glass-card" role="main" aria-labelledby="page-title">
+    <main class="glass-card">
       <div class="hero">
         <div class="hero-text">
-          <h1 id="page-title">Liquid Glass Home — Pop to Play</h1>
-          <p class="lead">Click or drag anywhere on the page to pop the bubble‑wrap background. It's tactile, satisfying, and fully resettable.</p>
-          <div class="controls" aria-hidden="false">
-            <button class="btn primary" id="resetBtn" title="Refill the bubble wrap">Refill bubbles</button>
-            <button class="btn" id="shuffleBtn" title="Shuffle bubble positions">Shuffle layout</button>
+          <h1>Liquid Glass Home — Pop to Play</h1>
+          <p class="lead">Click or drag anywhere to pop the bubble-wrap background. Double-click to reset.</p>
+          <div class="controls">
+            <button class="btn primary" id="resetBtn">Refill bubbles</button>
+            <button class="btn" id="shuffleBtn">Shuffle layout</button>
             <div class="credit">Made with liquid glass ✨</div>
           </div>
-          <p class="info">Tip: drag across bubbles to pop many at once. Double-click anywhere to reset.</p>
-        </div>
-        <div style="width:120px; height:120px; flex:0 0 120px; display:grid; place-items:center;">
-          <!-- Little decorative glass orb -->
-          <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <radialGradient id="g" cx="30%" cy="20%">
-                <stop offset="0%" stop-color="#fff" stop-opacity="0.95"/>
-                <stop offset="45%" stop-color="#cfe8ff" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="#7aa7ff" stop-opacity="0.2"/>
-              </radialGradient>
-            </defs>
-            <circle cx="48" cy="48" r="44" fill="url(#g)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-            <ellipse cx="36" cy="34" rx="10" ry="6" fill="rgba(255,255,255,0.9)"/>
-          </svg>
         </div>
       </div>
     </main>
   </div>
 
 <script>
-/*
-  Bubble Wrap Interactive Script
-  - Builds a grid of bubbles to fill the viewport.
-  - Click or drag to pop bubbles (popped => scales flat + plays sound)
-  - Reset button reinflates them.
-  - Shuffle randomly offsets rows for more realism.
-*/
-
 (function () {
   const wrap = document.getElementById('bubble-wrap');
   const resetBtn = document.getElementById('resetBtn');
   const shuffleBtn = document.getElementById('shuffleBtn');
   const page = document.getElementById('page');
 
-  // Settings
   const settings = {
     bubbleSize: parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bubble-size')) || 48,
     gap: parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 12,
     popSoundVolume: 0.6
   };
 
-  // audio context for pop sound
   let audioCtx;
   function ensureAudio(){
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
   }
 
   function playPopSound(){
     const ctx = ensureAudio();
-    // Create a short noise burst with a little filter and envelope
-    const bufferSize = ctx.sampleRate * 0.05; // 50ms
+    const bufferSize = ctx.sampleRate * 0.05;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i=0;i<bufferSize;i++){
-      // quickly decaying noise
       data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
     }
     const noise = ctx.createBufferSource();
@@ -281,7 +213,6 @@
     const band = ctx.createBiquadFilter();
     band.type = 'bandpass';
     band.frequency.value = 1200 + Math.random()*600;
-    band.Q.value = 0.8;
 
     const gain = ctx.createGain();
     gain.gain.value = settings.popSoundVolume;
@@ -299,182 +230,70 @@
     noise.stop(now + 0.06);
   }
 
-  // Build the grid based on available width and height
   function buildGrid(){
     wrap.innerHTML = '';
-    const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // Determine columns based on CSS grid auto-fill simpler: compute cols from size + gap & padding
-    const style = getComputedStyle(wrap);
-    const paddingTop = parseInt(style.paddingTop) || 0;
-    const paddingSides = (parseInt(style.paddingLeft)||0) + (parseInt(style.paddingRight)||0);
-    const usableW = vw - paddingSides;
     const bubbleTotal = settings.bubbleSize + settings.gap;
-    const cols = Math.max(6, Math.floor(usableW / bubbleTotal));
-    // Use rows to cover height
-    const usableH = vh - paddingTop - 80; // leave room for top
-    const rows = Math.max(4, Math.ceil(usableH / bubbleTotal) + 2);
+    const cols = Math.max(6, Math.floor(vw / bubbleTotal));
+    const rows = Math.max(4, Math.ceil(vh / bubbleTotal) + 2);
 
-    // set grid template columns using inline style to ensure consistent layout
     wrap.style.gridTemplateColumns = `repeat(${cols}, ${settings.bubbleSize}px)`;
 
-    const total = rows * cols;
-    let rowOffset = 0;
     for (let r = 0; r < rows; r++){
-      // alternate offsets to create packing similar to bubble wrap
       const offset = (r % 2 === 0) ? 0 : 1;
       for (let c = 0; c < cols; c++){
         const bubble = document.createElement('button');
         bubble.className = 'bubble';
-        bubble.setAttribute('aria-pressed','false');
         bubble.setAttribute('type','button');
         bubble.dataset.row = r;
-        bubble.dataset.col = c;
         if (offset) bubble.dataset.rowOffset = "1";
-        // Accessible label
-        bubble.setAttribute('aria-label','bubble');
-        // attach event listeners
         wrap.appendChild(bubble);
       }
     }
   }
 
-  // Pop a bubble element (if not popped)
-  function popBubble(el, playSound=true){
-    if (!el || !el.classList) return;
-    if (el.classList.contains('popped')) return;
-    el.classList.add('popped');
-    el.setAttribute('aria-pressed','true');
-    if (playSound) {
-      // ensure audio starts on user gesture - browsers require user gesture to resume
-      try {
-        if (audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
-      } catch(e){}
+  function popBubble(el){
+    if (!el.classList.contains('popped')){
+      el.classList.add('popped');
       playPopSound();
     }
   }
 
-  // Refill all bubbles
   function refill(){
-    const bubbles = wrap.querySelectorAll('.bubble');
-    bubbles.forEach(b => {
-      b.classList.remove('popped');
-      b.setAttribute('aria-pressed','false');
-    });
+    wrap.querySelectorAll('.bubble').forEach(b => b.classList.remove('popped'));
   }
 
-  // Shuffle slight horizontal offsets for rows (visual effect)
   function shuffle(){
     const rows = [...new Set(Array.from(wrap.children).map(b => b.dataset.row))];
     rows.forEach(r => {
-      // randomly apply data-row-offset
       const offset = Math.random() > 0.5;
       wrap.querySelectorAll(`.bubble[data-row="${r}"]`).forEach(b => {
         if (offset) b.dataset.rowOffset = "1";
         else b.removeAttribute('data-row-offset');
       });
     });
-    // For fun, play a handful of pops in sequence to simulate jostling
-    const bubbles = Array.from(wrap.children);
-    for(let i=0;i<6;i++){
-      setTimeout(() => {
-        const rand = bubbles[Math.floor(Math.random()*bubbles.length)];
-        if (rand) {
-          rand.classList.toggle('popped');
-          // play gentle sound
-          playPopSound();
-        }
-      }, i*60);
-    }
   }
 
-  // Pointer interactions (click & drag)
   let pointerDown = false;
-  let pointerId = null;
-
-  function onPointerDown(e){
+  wrap.addEventListener('pointerdown', e => {
     pointerDown = true;
-    pointerId = e.pointerId;
-    // pop the element directly under the pointer
-    const target = e.target;
-    if (target.classList && target.classList.contains('bubble')){
-      popBubble(target, true);
-    }
-    // capture pointer to track moves across bubbles
-    wrap.setPointerCapture && wrap.setPointerCapture(pointerId);
-  }
-
-  function onPointerUp(e){
-    pointerDown = false;
-    try { wrap.releasePointerCapture && wrap.releasePointerCapture(pointerId); } catch(e){}
-    pointerId = null;
-  }
-
-  function onPointerMove(e){
+    if (e.target.classList.contains('bubble')) popBubble(e.target);
+  });
+  document.addEventListener('pointerup', () => pointerDown = false);
+  document.addEventListener('pointermove', e => {
     if (!pointerDown) return;
-    // get element under pointer
-    const x = e.clientX;
-    const y = e.clientY;
-    const el = document.elementFromPoint(x, y);
-    if (el && el.classList && el.classList.contains('bubble')){
-      popBubble(el, true);
-    }
-  }
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if (el && el.classList.contains('bubble')) popBubble(el);
+  });
 
-  // Keyboard: reset with R, shuffle with S (helpful)
-  function onKey(e){
-    if (e.key.toLowerCase() === 'r') refill();
-    if (e.key.toLowerCase() === 's') shuffle();
-  }
+  resetBtn.addEventListener('click', refill);
+  shuffleBtn.addEventListener('click', shuffle);
+  page.addEventListener('dblclick', refill);
+  window.addEventListener('resize', () => buildGrid());
 
-  // Build initially and attach listeners
-  function init(){
-    buildGrid();
-    // Delegate pointer events from the container
-    wrap.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('pointerup', onPointerUp);
-    document.addEventListener('pointermove', onPointerMove);
-    resetBtn.addEventListener('click', () => {
-      refill();
-      // small audio flourish
-      const ctx = ensureAudio();
-      if (ctx) playPopSound();
-    });
-    shuffleBtn.addEventListener('click', shuffle);
-    window.addEventListener('resize', debounce(buildGrid, 150));
-    // allow double-click to reset
-    page.addEventListener('dblclick', refill);
-    document.addEventListener('keydown', onKey);
-
-    // A11y: keyboard popping — space/enter on focused bubble
-    wrap.addEventListener('keydown', (e) => {
-      if ((e.key === ' ' || e.key === 'Enter') && e.target.classList.contains('bubble')) {
-        e.preventDefault();
-        popBubble(e.target, true);
-      }
-    });
-
-    // Try to resume audio on first user gesture (some browsers lock audio)
-    document.addEventListener('pointerdown', function resumeAudioOnce(){
-      const ctx = ensureAudio();
-      if (ctx && ctx.state === 'suspended') ctx.resume();
-      document.removeEventListener('pointerdown', resumeAudioOnce);
-    }, { once: true });
-  }
-
-  // Utility: debounce
-  function debounce(fn, wait){
-    let t;
-    return function(...a){
-      clearTimeout(t);
-      t = setTimeout(()=> fn.apply(this,a), wait);
-    };
-  }
-
-  // Initialize
-  init();
-
+  buildGrid();
 })();
 </script>
 </body>

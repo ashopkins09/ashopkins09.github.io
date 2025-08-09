@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bubble Wrap Background - Pop & Unpop Animations</title>
+<title>Bubble Wrap - Single Pop at a Time</title>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
 <style>
   html, body {
@@ -121,7 +121,7 @@
 
 <div class="container">
   <h1>Bubble Wrap Fun!</h1>
-  <p>Click bubbles to pop or unpop them with smooth animations and sound.</p>
+  <p>Only one bubble pops at a time. Click another to pop it and unpop the previous.</p>
 </div>
 
 <audio id="popSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
@@ -129,6 +129,7 @@
 <script>
   const bubbleWrap = document.getElementById('bubble-wrap');
   const popSound = document.getElementById('popSound');
+  let poppedBubble = null; // tracks currently popped bubble
 
   function createBubbles() {
     bubbleWrap.innerHTML = '';
@@ -141,21 +142,26 @@
       bubble.classList.add('bubble');
 
       bubble.addEventListener('click', () => {
-        if (bubble.classList.contains('pop')) {
-          // If popped, remove pop and add unpop animation
-          bubble.classList.remove('pop');
-          bubble.classList.add('unpop');
-
-          // Remove unpop class after animation finishes
-          bubble.addEventListener('animationend', () => {
-            bubble.classList.remove('unpop');
-          }, { once: true });
-        } else if (!bubble.classList.contains('unpop')) {
-          // If not popped, add pop and play sound
-          bubble.classList.add('pop');
-          const soundClone = popSound.cloneNode();
-          soundClone.play();
+        if (bubble === poppedBubble) {
+          // Clicking same bubble does nothing
+          return;
         }
+
+        if (poppedBubble) {
+          // Unpop the previously popped bubble
+          poppedBubble.classList.remove('pop');
+          poppedBubble.classList.add('unpop');
+          poppedBubble.addEventListener('animationend', () => {
+            poppedBubble.classList.remove('unpop');
+          }, { once: true });
+        }
+
+        // Pop the clicked bubble
+        bubble.classList.add('pop');
+        const soundClone = popSound.cloneNode();
+        soundClone.play();
+
+        poppedBubble = bubble;
       });
 
       bubbleWrap.appendChild(bubble);

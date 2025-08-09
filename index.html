@@ -1,71 +1,227 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Welcome — My Home on the Web</title>
-
-  <!-- Google font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="styles.css">
-  <meta name="description" content="Personal homepage with a bright, modern glassmorphic style and playful background. Works on GitHub Pages.">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>My Home Page</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1: #f5faff;
+    --bg-2: #dff4ff;
+    --accent-1: #73c3ff;
+    --accent-2: #a87bff;
+    --glass-alpha: 0.35;
+    --glass-border: rgba(255,255,255,0.3);
+    --card-width: clamp(260px, 45vw, 720px);
+    --font-sans: 'Inter', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:var(--font-sans);
+    background:linear-gradient(120deg,var(--bg-1),var(--bg-2));
+    color:#223;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .lang-ja { display: none; }
+  .page{position:relative; min-height:100vh;}
+  .bg{position:fixed; inset:0; z-index:0; overflow:hidden}
+  .blobs{
+    position:absolute;
+    inset:-20% -10% auto -10%;
+    filter:url(#goo);
+    pointer-events:none;
+  }
+  .blob{
+    position:absolute;
+    width:clamp(180px,25vw,500px);
+    aspect-ratio:1;
+    border-radius:50%;
+    mix-blend-mode:multiply;
+    opacity:0.4;
+    animation:float 16s ease-in-out infinite;
+  }
+  .b1{left:5%; top:10%; background: radial-gradient(circle at 30% 20%, #73c3ff, #b0e1ff);}
+  .b2{right:8%; top:5%; background: radial-gradient(circle at 40% 30%, #a87bff, #d2b8ff); animation-delay:3s}
+  .b3{left:20%; bottom:-5%; background: radial-gradient(circle at 40% 40%, #ffb0d0, #ffd6e7); animation-delay:6s}
+  @keyframes float {
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-20px)}
+  }
+  .container{position:relative; z-index:10; max-width:1200px; margin:0 auto; padding:40px 24px;}
+  .site-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
+  .logo{font-weight:800; font-size:20px; color:var(--accent-1);}
+  .logo span{color:var(--accent-2)}
+  .nav a{color:#334; text-decoration:none; margin-left:18px; font-weight:500; font-size:14px}
+  .hero{display:flex; justify-content:center;}
+  .glass-card{
+    --tiltX:0;
+    --tiltY:0;
+    width:var(--card-width);
+    padding:28px;
+    border-radius:18px;
+    background:rgba(255,255,255,var(--glass-alpha));
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    transform: perspective(800px) rotateX(calc(var(--tiltX) * 1deg)) rotateY(calc(var(--tiltY) * 1deg));
+    transition:transform 0.2s ease;
+  }
+  .glass-inner h1{margin-top:0; font-size:2rem; color:#223}
+  .lead{color:#445; font-weight:400; margin:0 0 18px}
+  .btn{display:inline-block; padding:10px 16px; border-radius:12px; font-weight:600; margin-right:10px; text-decoration:none; border:1px solid rgba(0,0,0,0.05);}
+  .btn.primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:#fff;}
+  .btn.ghost{background:transparent; color:#334;}
+  .site-footer{margin-top:44px; font-size:13px; text-align:center; color:#667}
+  .lang-toggle {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
-  <!-- SVG filter for gooey blobs -->
-  <svg style="position: absolute; width:0; height:0; pointer-events:none;" aria-hidden="true" >
-    <defs>
-      <filter id="goo">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-        <feColorMatrix in="blur" mode="matrix" values="
-           1 0 0 0 0
-           0 1 0 0 0
-           0 0 1 0 0
-           0 0 0 18 -7" result="goo" />
-        <feBlend in="SourceGraphic" in2="goo" />
-      </filter>
-    </defs>
-  </svg>
+<svg style="position: absolute; width:0; height:0; pointer-events:none;" aria-hidden="true" >
+  <defs>
+    <filter id="goo">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="
+         1 0 0 0 0
+         0 1 0 0 0
+         0 0 1 0 0
+         0 0 0 18 -7" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+</svg>
 
-  <main class="page">
-    <div class="bg">
-      <div class="blobs" aria-hidden="true">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="blob b3"></div>
-      </div>
+<main class="page">
+  <div class="bg">
+    <div class="blobs" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
     </div>
+  </div>
 
-    <section class="container">
-      <header class="site-header">
-        <div class="logo">My<span>Home</span></div>
-        <nav class="nav">
-          <a href="#">About Me</a>
-          <a href="#">Projects</a>
-          <a href="#">Contact</a>
-        </nav>
-      </header>
+  <section class="container">
+    <header class="site-header">
+      <div class="logo">
+        <span class="lang-en">My</span><span class="lang-ja">マイ</span>
+        <span> </span>
+        <span class="lang-en">Home</span><span class="lang-ja">ホーム</span>
+      </div>
+      <nav class="nav">
+        <a href="#"><span class="lang-en">About Me</span><span class="lang-ja">私について</span></a>
+        <a href="#"><span class="lang-en">Projects</span><span class="lang-ja">プロジェクト</span></a>
+        <a href="#"><span class="lang-en">Contact</span><span class="lang-ja">連絡先</span></a>
+      </nav>
+      <button class="lang-toggle" id="langToggle">日本語</button>
+    </header>
 
-      <div class="hero">
-        <div class="glass-card" id="glassCard">
-          <div class="glass-inner">
-            <h1>Hi, I’m [Your Name]</h1>
-            <p class="lead">Welcome to my personal corner of the internet.  
-              Here you’ll find my work, my passions, and a few experiments I’ve been playing with.</p>
-            <div class="actions">
-              <a href="#" class="btn primary">See My Work</a>
-              <a href="#" class="btn ghost">Get in Touch</a>
-            </div>
+    <div class="hero">
+      <div class="glass-card" id="glassCard">
+        <div class="glass-inner">
+          <h1>
+            <span class="lang-en">Hi, I’m [Your Name]</span>
+            <span class="lang-ja">こんにちは、[あなたの名前]です</span>
+          </h1>
+          <p class="lead">
+            <span class="lang-en">Welcome to my personal corner of the internet. Here you’ll find my work, my passions, and a few experiments I’ve been playing with.</span>
+            <span class="lang-ja">私のインターネット上の個人的な空間へようこそ。ここでは私の作品、情熱、そしていくつかの実験を見ることができます。</span>
+          </p>
+          <div class="actions">
+            <a href="#" class="btn primary">
+              <span class="lang-en">See My Work</span>
+              <span class="lang-ja">作品を見る</span>
+            </a>
+            <a href="#" class="btn ghost">
+              <span class="lang-en">Get in Touch</span>
+              <span class="lang-ja">連絡を取る</span>
+            </a>
           </div>
         </div>
       </div>
+    </div>
 
-      <footer class="site-footer">
-        <p>© 2025 [Your Name] — Designed with CSS & JS</p>
-      </footer>
-    </section>
-  </main>
+    <footer class="site-footer">
+      <p>
+        <span class="lang-en">© 2025 [Your Name] — Designed with CSS & JS</span>
+        <span class="lang-ja">© 2025 [あなたの名前] — CSSとJSでデザイン</span>
+      </p>
+    </footer>
+  </section>
+</main>
 
-  <script src="script.js"></script>
+<script>
+(() => {
+  const card = document.getElementById('glassCard');
+  const blobs = document.querySelectorAll('.blob');
+  const langToggle = document.getElementById('langToggle');
+
+  let currentLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
+  updateLanguage(currentLang);
+
+  langToggle.addEventListener('click', () => {
+    const newLang = currentLang === 'en' ? 'ja' : 'en';
+    if (currentLang === 'en' && newLang === 'ja') {
+      alert("Weeb mode activated");
+    }
+    currentLang = newLang;
+    updateLanguage(currentLang);
+  });
+
+  function updateLanguage(lang) {
+    if (lang === 'ja') {
+      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'inline');
+      langToggle.textContent = "English";
+    } else {
+      document.querySelectorAll('.lang-ja').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'inline');
+      langToggle.textContent = "日本語";
+    }
+  }
+
+  const maxTilt = 6;
+  window.addEventListener('mousemove', (e) => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const x = e.clientX - w / 2;
+    const y = e.clientY - h / 2;
+    const nx = (x / (w / 2));
+    const ny = (y / (h / 2));
+    const tiltY = nx * maxTilt;
+    const tiltX = -ny * maxTilt;
+    card.style.setProperty('--tiltX', tiltX.toFixed(2));
+    card.style.setProperty('--tiltY', tiltY.toFixed(2));
+  });
+
+  window.addEventListener('mouseleave', () => {
+    card.style.setProperty('--tiltX', 0);
+    card.style.setProperty('--tiltY', 0);
+  });
+
+  let t = 0;
+  function idleLoop(){
+    t += 0.005;
+    blobs.forEach((b, i) => {
+      const dx = Math.sin(t * (0.6 + i * 0.2)) * (6 + i*4);
+      const dy = Math.cos(t * (0.4 + i * 0.15)) * (4 + i*3);
+      b.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    });
+    requestAnimationFrame(idleLoop);
+  }
+  idleLoop();
+})();
+</script>
 </body>
 </html>

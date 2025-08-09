@@ -363,18 +363,18 @@
     }
     idleLoop();
 
-    const maxTilt = 6;
+    const maxTilt = 15; // Increased tilt for stronger effect
+    const smoothingFactor = 0.05; // Lower for smoother, less jittery movement
 
     function applyTilt(tiltX, tiltY, translateX = 0, translateY = 0) {
       card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     }
 
-    // Smoothing variables and factor
+    // Smoothing variables
     let prevTiltX = 0;
     let prevTiltY = 0;
     let prevTranslateX = 0;
     let prevTranslateY = 0;
-    const smoothingFactor = 0.1; // smaller = smoother but more lag
 
     async function detectFace() {
       if (video.readyState < 2) {
@@ -389,8 +389,8 @@
         const vw = video.videoWidth;
         const vh = video.videoHeight;
 
-        const nx = (centerX / vw) * 2 - 1; // -1 to 1
-        const ny = (centerY / vh) * 2 - 1; // -1 to 1
+        const nx = (centerX / vw) * 2 - 1; // normalize to [-1,1]
+        const ny = (centerY / vh) * 2 - 1; // normalize to [-1,1]
 
         const targetTiltY = nx * maxTilt;
         const targetTiltX = -ny * maxTilt;
@@ -405,7 +405,7 @@
 
         applyTilt(prevTiltX.toFixed(2), prevTiltY.toFixed(2), prevTranslateX.toFixed(2), prevTranslateY.toFixed(2));
       } else {
-        // Slowly return to neutral if no face detected
+        // Slowly reset when no face
         prevTiltX += (0 - prevTiltX) * smoothingFactor;
         prevTiltY += (0 - prevTiltY) * smoothingFactor;
         prevTranslateX += (0 - prevTranslateX) * smoothingFactor;

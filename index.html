@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bubble Wrap - Subtle Crinkle Effect</title>
+<title>Bubble Wrap - Realistic Popped</title>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
 <style>
   html, body {
@@ -27,6 +27,7 @@
   }
 
   .bubble {
+    position: relative;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -37,50 +38,73 @@
     cursor: pointer;
     transform-origin: center;
     clip-path: circle(50% at 50% 50%);
+    overflow: hidden;
     transition: box-shadow 0.3s ease;
+  }
+
+  /* Crinkle texture overlay with noise pattern */
+  .bubble::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    opacity: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" ><filter id="f"><feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="1" stitchTiles="stitch"/></filter><rect width="20" height="20" filter="url(%23f)" fill="white" /></svg>') repeat;
+    mix-blend-mode: multiply;
+    animation: crinkleMove 3s linear infinite;
+  }
+
+  @keyframes crinkleMove {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 20px 20px;
+    }
   }
 
   @keyframes popAnim {
     0% {
-      transform: scale(1);
+      transform: scale(1) scaleY(1);
       box-shadow:
         inset 0 4px 6px rgba(255 255 255 / 0.9),
         0 3px 5px rgba(0 0 0 / 0.1);
       filter: none;
     }
     50% {
-      transform: scale(0.7);
+      transform: scale(0.8) scaleY(0.6);
       box-shadow:
-        inset 0 2px 3px rgba(0 0 0 / 0.3),
-        0 1px 2px rgba(0 0 0 / 0.2);
+        inset 0 1px 3px rgba(0 0 0 / 0.5),
+        0 0 2px rgba(0 0 0 / 0.2);
       filter: url(#crinkle);
     }
     100% {
-      transform: scale(0.7);
+      transform: scale(0.8) scaleY(0.6);
       box-shadow:
-        inset 0 2px 3px rgba(0 0 0 / 0.3),
-        0 1px 2px rgba(0 0 0 / 0.2);
+        inset 0 1px 3px rgba(0 0 0 / 0.5),
+        0 0 2px rgba(0 0 0 / 0.2);
       filter: url(#crinkle);
     }
   }
 
   @keyframes unpopAnim {
     0% {
-      transform: scale(0.7);
+      transform: scale(0.8) scaleY(0.6);
       box-shadow:
-        inset 0 2px 3px rgba(0 0 0 / 0.3),
-        0 1px 2px rgba(0 0 0 / 0.2);
+        inset 0 1px 3px rgba(0 0 0 / 0.5),
+        0 0 2px rgba(0 0 0 / 0.2);
       filter: url(#crinkle);
     }
     50% {
-      transform: scale(0.85);
+      transform: scale(0.9) scaleY(0.85);
       box-shadow:
         inset 0 3px 4px rgba(0 0 0 / 0.15),
         0 2px 3px rgba(0 0 0 / 0.1);
       filter: none;
     }
     100% {
-      transform: scale(1);
+      transform: scale(1) scaleY(1);
       box-shadow:
         inset 0 4px 6px rgba(255 255 255 / 0.9),
         0 3px 5px rgba(0 0 0 / 0.1);
@@ -90,6 +114,10 @@
 
   .pop {
     animation: popAnim 0.8s ease forwards;
+  }
+
+  .pop::before {
+    opacity: 0.15;
   }
 
   .unpop {
@@ -125,10 +153,10 @@
 <!-- SVG filter for subtle crinkle -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <filter id="crinkle" x="0" y="0" width="100%" height="100%" >
-    <feTurbulence id="turbulence" baseFrequency="0.03 0.04" numOctaves="2" result="turbulence" seed="2">
-      <animate attributeName="baseFrequency" values="0.03 0.04;0.06 0.08;0.03 0.04" dur="4s" repeatCount="indefinite" />
+    <feTurbulence id="turbulence" baseFrequency="0.07 0.08" numOctaves="2" result="turbulence" seed="7">
+      <animate attributeName="baseFrequency" values="0.07 0.08;0.12 0.15;0.07 0.08" dur="3s" repeatCount="indefinite" />
     </feTurbulence>
-    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
+    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="5" xChannelSelector="R" yChannelSelector="G" />
   </filter>
 </svg>
 
@@ -161,13 +189,11 @@
       bubble.classList.add('bubble');
 
       bubble.addEventListener('click', () => {
-        if (bubble === poppedBubble) {
-          return; // ignore repeated click
-        }
+        if (bubble === poppedBubble) return;
 
         if (poppedBubble) {
           poppedBubble.classList.remove('pop');
-          void poppedBubble.offsetWidth; // reflow for animation
+          void poppedBubble.offsetWidth; // reflow
           poppedBubble.classList.add('unpop');
           poppedBubble.addEventListener('animationend', () => onUnpopAnimationEnd(poppedBubble), { once: true });
         }

@@ -1,196 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bubble Wrap - Crinkled Inside, Rounded Outside</title>
-<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Wrap Pop</title>
 <style>
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    font-family: 'Hachi Maru Pop', cursive;
-    background: linear-gradient(120deg, #f5faff, #dff4ff);
-    overflow: hidden;
+  body {
+    margin: 0;
+    background: #cce6ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: sans-serif;
   }
 
-  #bubble-wrap {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+  .wrap {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 48px);
-    grid-auto-rows: 48px;
-    justify-content: center;
-    gap: 6px;
-    padding: 12px;
-    user-select: none;
-    z-index: 0;
+    grid-template-columns: repeat(10, 60px);
+    gap: 10px;
   }
 
   .bubble {
-    position: relative;
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    background:
-      radial-gradient(circle at 40% 40%, #fff 30%, #a3caff 70%, #7db3f7 95%);
-    box-shadow:
-      inset 0 6px 10px rgba(255 255 255 / 0.85),
-      inset 0 -3px 8px rgba(0 38 120 / 0.25),
-      0 3px 5px rgba(0 0 0 / 0.1);
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #aee1ff 70%, #66c2ff 100%);
+    box-shadow: inset -3px -3px 8px rgba(255, 255, 255, 0.6),
+                inset 3px 3px 8px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    overflow: hidden;
-    transition: box-shadow 0.4s ease;
+    transition: all 0.4s ease;
+    position: relative;
   }
 
-  /* Crinkle texture overlay */
-  .bubble::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2"/></filter><rect width="20" height="20" filter="url(%23noise)" fill="white"/></svg>') repeat;
-    mix-blend-mode: multiply;
-    animation: crinkleMove 5s linear infinite;
-  }
-
-  @keyframes crinkleMove {
-    0% { background-position: 0 0; }
-    100% { background-position: 20px 20px; }
-  }
-
-  /* Highlight folds for popped */
-  .bubble::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0;
+  .bubble.popped {
     background:
-      radial-gradient(ellipse at 25% 25%, rgba(255 255 255 / 0.6), transparent 50%),
-      radial-gradient(ellipse at 75% 75%, rgba(255 255 255 / 0.25), transparent 50%);
-    filter: blur(2px);
+      radial-gradient(circle at 50% 50%, rgba(200, 200, 200, 0.8) 0%, rgba(160, 160, 160, 0.9) 60%, rgba(130, 130, 130, 1) 100%),
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><filter id="crinkle"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="4" /></filter><circle cx="30" cy="30" r="28" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" filter="url(%23crinkle)"/></svg>') center/cover no-repeat;
+    box-shadow: inset -2px -2px 5px rgba(255, 255, 255, 0.2),
+                inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+  }
+
+  .bubble::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 60%);
+    pointer-events: none;
     transition: opacity 0.4s ease;
   }
 
-  .pop {
-    /* Keep perfect circle shape */
-    /* Add subtle crinkle filter */
-    filter: url(#crinkleFilter);
-  }
-
-  .pop::before, .pop::after {
-    opacity: 0.15;
-  }
-
-  .pop {
-    /* Remove scaling so shape doesn't distort */
-    /* Add subtle inner shadow and less outer shadow */
-    box-shadow:
-      inset 0 8px 14px rgba(255 255 255 / 0.9),
-      inset 0 -6px 14px rgba(0 38 120 / 0.4),
-      0 1px 3px rgba(0 0 0 / 0.1);
-    transition: box-shadow 0.6s ease;
-  }
-
-  .unpop {
-    filter: none !important;
-    box-shadow:
-      inset 0 6px 10px rgba(255 255 255 / 0.85),
-      inset 0 -3px 8px rgba(0 38 120 / 0.25),
-      0 3px 5px rgba(0 0 0 / 0.1);
-    transition: box-shadow 0.6s ease;
-  }
-
-  .container {
-    position: relative;
-    z-index: 10;
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-    background: rgba(255 255 255 / 0.6);
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(0 0 0 / 0.1);
-    text-align: center;
-  }
-
-  h1 {
-    margin: 0 0 20px;
-    color: #223;
-    font-size: 2.5rem;
-  }
-
-  p {
-    color: #445;
-    font-size: 1.2rem;
+  .bubble.popped::after {
+    opacity: 0;
   }
 </style>
 </head>
 <body>
-
-<!-- SVG filter for crinkle inside -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <filter id="crinkleFilter" x="0" y="0" width="100%" height="100%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.12 0.15" numOctaves="2" result="turbulence" seed="9">
-      <animate attributeName="baseFrequency" values="0.12 0.15;0.18 0.22;0.12 0.15" dur="4s" repeatCount="indefinite" />
-    </feTurbulence>
-    <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G" />
-  </filter>
-</svg>
-
-<div id="bubble-wrap" aria-hidden="true"></div>
-
-<div class="container">
-  <h1>Bubble Wrap Fun!</h1>
-  <p>Only one bubble pops at a time. Click another to pop it and unpop the previous.</p>
-</div>
-
-<audio id="popSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
+  <div class="wrap"></div>
 
 <script>
-  const bubbleWrap = document.getElementById('bubble-wrap');
-  const popSound = document.getElementById('popSound');
-  let poppedBubble = null;
+const wrap = document.querySelector('.wrap');
+let lastPopped = null;
 
-  function onUnpopAnimationEnd(bubble) {
-    bubble.classList.remove('unpop');
-  }
+// Create bubbles
+for (let i = 0; i < 50; i++) {
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.addEventListener('click', () => {
+    if (b === lastPopped) return;
 
-  function createBubbles() {
-    bubbleWrap.innerHTML = '';
-    const columns = Math.floor(window.innerWidth / 48);
-    const rows = Math.floor(window.innerHeight / 48);
-    const total = columns * rows;
-
-    for (let i = 0; i < total; i++) {
-      const bubble = document.createElement('div');
-      bubble.classList.add('bubble');
-
-      bubble.addEventListener('click', () => {
-        if (bubble === poppedBubble) return;
-
-        if (poppedBubble) {
-          poppedBubble.classList.remove('pop');
-          poppedBubble.classList.add('unpop');
-          poppedBubble.addEventListener('animationend', () => onUnpopAnimationEnd(poppedBubble), { once: true });
-        }
-
-        bubble.classList.add('pop');
-        const soundClone = popSound.cloneNode();
-        soundClone.play();
-
-        poppedBubble = bubble;
-      });
-
-      bubbleWrap.appendChild(bubble);
+    if (lastPopped) {
+      lastPopped.classList.remove('popped');
     }
-  }
 
-  createBubbles();
-  window.addEventListener('resize', createBubbles);
+    b.classList.add('popped');
+    lastPopped = b;
+
+    // Optional: play pop sound
+    const popSound = new Audio('https://www.soundjay.com/button/sounds/button-16.mp3');
+    popSound.play();
+  });
+  wrap.appendChild(b);
+}
 </script>
-
 </body>
 </html>
